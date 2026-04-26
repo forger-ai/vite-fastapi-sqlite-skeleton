@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.cors import allowed_origins
 from app.database import init_db
-from app.routers import health
+from app.health import router as health_router
 
 app = FastAPI(
     title="Skeleton API",
@@ -15,14 +16,14 @@ app = FastAPI(
 # ── CORS ─────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-app.include_router(health.router, prefix="/api")
+app.include_router(health_router, prefix="/api")
 
 
 @app.on_event("startup")

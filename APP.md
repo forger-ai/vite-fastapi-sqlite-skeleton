@@ -15,8 +15,9 @@ Su objetivo es validar que la conexion entre frontend y API funcione y sirva com
 - Usuarios no tecnicos que solo necesitan confirmar que la app esta "viva".
 
 ## Stack
-- Backend: Python 3.12 + FastAPI
-- Frontend: Vite + React + MUI
+- Backend: Python 3.12 + FastAPI (base compartida en `commons/backend`)
+- Frontend: Vite + React + MUI (base compartida en `commons/frontend`)
+- Common del stack: submodulo `commons/` (vite-fastapi-sqlite-commons)
 
 ## Servicios
 - Backend HTTP
@@ -42,3 +43,4 @@ Su objetivo es validar que la conexion entre frontend y API funcione y sirva com
 - Esta app es una base minima: no asumir reglas de negocio complejas.
 - Antes de agregar features, definir primero el flujo funcional esperado.
 - Mantener mensajes y pantallas en lenguaje simple para usuarios no tecnicos.
+- El runtime compartido (dockerfiles/helpers/client) viene desde `commons/`.
