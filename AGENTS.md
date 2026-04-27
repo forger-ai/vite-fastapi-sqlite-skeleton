@@ -4,8 +4,6 @@
 
 Este archivo es la fuente principal de contexto funcional y operativo para esta app.
 
-Si existe `APP.md` en clones antiguos, tratalo como legado. No debe prevalecer sobre este `AGENTS.md`.
-
 Si existe `manifest.json`, usalo para metadata de instalacion/servicios/scripts. No lo uses como lista de capacidades visibles para usuario final.
 
 El agente debe diferenciar siempre entre:
@@ -176,7 +174,14 @@ Script interno:
 
 Uso:
 - generar ZIP distribuible sin artefactos temporales
+- excluir metadata Git en cualquier nivel, incluyendo submodulos
 - no pedir al usuario que ejecute rutas internas, salvo que pidan modo tecnico
+
+### Changelog
+
+`manifest.json` mantiene una entrada `changelog` por cada version publicada.
+El changelog describe cambios visibles y operativos que la desktop puede mostrar cuando detecta una actualizacion.
+No usar el changelog para inventar capacidades: solo resume diferencias reales de esa version.
 
 ## Regla de comunicacion
 
@@ -327,4 +332,3 @@ Al derivar una app desde este skeleton:
 - simple
 - sin jerga innecesaria
 - sin prometer capacidades no implementadas
-

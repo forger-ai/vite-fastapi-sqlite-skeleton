@@ -104,3 +104,5 @@ Cuando crees una app desde este skeleton:
 2. Conserva el patrón de mounts de `docker-compose.yml`.
 3. Evita copiar y forkear archivos compartidos si no es estrictamente necesario.
 4. Si agregas utilidades reutilizables para múltiples apps, súbelas a `vite-fastapi-sqlite-commons`.
+5. Mantén `manifest.json` con una entrada de `changelog` por cada versión publicada.
+6. Verifica que el ZIP distribuible no incluya `.git` en ningún nivel.
