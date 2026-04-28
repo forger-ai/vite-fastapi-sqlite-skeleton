@@ -34,7 +34,13 @@
     "short_description": "Base template for new local Forger apps.",
     "description": "Skeleton validates the FastAPI backend, SQLite local storage shape, Vite React frontend, and MUI visual stack used by Forger apps.",
     "category": "utilities",
-    "permissions": ["app_data"],
+    "capabilities": [
+      {
+        "id": "local_app_data",
+        "title": "Guardar datos locales",
+        "description": "Usa el espacio privado de la app para guardar estado y datos propios."
+      }
+    ],
     "supported_platforms": ["darwin_arm64", "darwin_x64"]
   },
   "services": [
