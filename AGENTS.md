@@ -155,6 +155,25 @@ Implicancia:
 - en Docker, prevalece lo montado desde `commons`
 - fuera de Docker, se usan fallbacks locales
 
+### Skill `skills/stack-database-extension`
+
+Audiencia: agente.
+
+Tarea principal: modificar_aplicacion.
+
+Uso: cuando una app basada en este skeleton necesita modelos SQLModel, inicializacion de base de datos, migraciones SQLite, mounts de Docker Compose relacionados con `app.database` o scripts internos que dependen de la base.
+
+Esta skill documenta el patron de stack vigente:
+
+- `commons/backend/database.py` es el helper compartido de base de datos;
+- Docker Compose monta ese helper compartido sobre el helper local de la app;
+- cada app registra sus modelos y mantiene migraciones propias en una extension local, por convencion `database_ext.py`;
+- el backend y los scripts internos de cada app deben llamar al inicializador de app para no saltarse migraciones especificas.
+
+No resolver necesidades de migracion app-specific quitando el mount de `commons/backend/database.py`. Si una migracion depende de tablas o datos de una app concreta, debe vivir en la extension local de esa app y no en commons.
+
+No presentar esta skill al usuario final como una herramienta de uso. Hacia el usuario, traducirla a impacto funcional y mantener comandos/rutas como detalles internos salvo que los pidan explicitamente.
+
 ### Backend local
 
 Comandos internos tipicos:
