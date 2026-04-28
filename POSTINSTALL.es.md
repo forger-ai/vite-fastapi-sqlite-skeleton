@@ -1,4 +1,4 @@
-# POSTINSTALL
+# App instalada
 
 Esta app local ya esta instalada en tu espacio privado de Forger. Guarda sus datos en tu equipo y se abre como una experiencia propia.
 

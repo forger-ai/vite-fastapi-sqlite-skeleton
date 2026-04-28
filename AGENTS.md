@@ -1,137 +1,149 @@
 # AGENTS
 
-## Fuente de verdad
+## Source of Truth
 
-Este archivo es la fuente principal de contexto funcional y operativo para esta app.
+This file is the main functional and operational context source for this app.
 
-Si existe `manifest.json`, usalo para metadata de instalacion/servicios/scripts. No lo uses como lista de capacidades visibles para usuario final.
+If `manifest.json` exists, use it for installation, service, and script metadata. Do not use it as the list of user-visible capabilities.
 
-El agente debe diferenciar siempre entre:
-- capacidades visibles para el usuario
-- herramientas internas del agente
+The agent must always distinguish between:
 
-Regla clave:
-Las herramientas internas pueden usarse para ejecutar tareas, pero no deben presentarse como interfaz de usuario, ni como pasos que el usuario deba ejecutar manualmente.
+- user-visible capabilities
+- internal agent tools
 
-## Identidad del producto
+Key rule: internal tools can be used to execute tasks, but they must not be presented as the user interface or as steps the user must run manually.
+
+## Product Identity
 
 - id: `vite-fastapi-sqlite-skeleton`
-- nombre visible recomendado: `Skeleton`
-- tipo: plantilla base para crear apps nuevas en el stack `vite-fastapi-sqlite`
-- estado: base minima funcional, sin dominio de negocio especifico
+- recommended visible name: `Skeleton`
+- type: base template for creating new apps on the `vite-fastapi-sqlite` stack
+- status: minimal functional base, without a specific business domain
 
-## Objetivo funcional
+## Functional Goal
 
-Skeleton existe para acelerar la creacion de nuevas apps Forger con un baseline consistente:
+Skeleton exists to accelerate creation of new Forger apps with a consistent baseline:
 
-- backend FastAPI operativo
-- frontend Vite + React operativo
-- conexion frontend-backend funcional
-- contrato de stack comun via submodulo `commons/`
+- working FastAPI backend
+- working Vite + React frontend
+- functional frontend-backend connection
+- shared stack contract through the `commons/` submodule
 
-No es una app de negocio final. Es un punto de partida.
+It is not a final business app. It is a starting point.
 
-## Usuario objetivo
+## Target User
 
-### Usuario primario
-- equipos que construyen nuevas apps sobre Forger
-- operadores que quieren validar rapidamente que el runtime local funciona
+### Primary User
 
-### Usuario final (si se usa demo)
-- personas no tecnicas que solo necesitan confirmar que la app esta viva
+- teams building new apps on Forger
+- operators who want to quickly validate that the local runtime works
 
-## Alcance funcional real
+### Final User (if used as a demo)
 
-### Lo que SI hace hoy
-- levantar frontend y backend localmente
-- responder `GET /api/health` desde backend
-- mostrar estado de conectividad API en frontend
-- proveer estructura base para expandir features
+- non-technical people who only need to confirm the app is alive
 
-### Lo que NO hace hoy
-- autenticacion
-- autorizacion por roles
-- flujos de negocio (finanzas, inventario, CRM, etc.)
-- integraciones externas por defecto
-- ingestion de archivos por defecto
-- procesamiento batch por defecto
+## Real Functional Scope
 
-El agente no debe inventar capacidades fuera de este alcance.
+### What It Does Today
 
-## Capacidades visibles para el usuario
+- starts frontend and backend locally
+- responds to `GET /api/health` from the backend
+- shows API connectivity status in the frontend
+- provides a base structure for expanding features
 
-Estas son las acciones que puedes presentar como reales al usuario final.
+### What It Does Not Do Today
 
-### 1) Verificar estado general de la app
+- authentication
+- role-based authorization
+- business flows such as finance, inventory, CRM, etc.
+- default external integrations
+- default file ingestion
+- default batch processing
 
-El usuario puede pedir:
-- "la app esta corriendo?"
-- "el backend responde?"
-- "por que la pantalla dice API no disponible?"
+The agent must not invent capabilities outside this scope.
 
-Respuesta esperada:
-- confirmar estado visible
-- guiar en terminos funcionales simples
-- evitar detallar internals innecesarios salvo que lo pidan
+## User-Visible Capabilities
 
-### 2) Confirmar conectividad frontend-backend
+These are the actions you can present as real to the final user.
 
-El usuario puede pedir:
-- "que valida exactamente esta plantilla?"
-- "que significa API conectada?"
+### 1. Verify General App Status
 
-Respuesta esperada:
-- explicar que frontend consulta health del backend
-- explicar en lenguaje simple que hay comunicacion entre ambos servicios
+The user can ask:
 
-### 3) Pedir evolucion de la plantilla
+- "is the app running?"
+- "does the backend respond?"
+- "why does the screen say API unavailable?"
 
-El usuario puede pedir:
-- "quiero convertir esto en app de X"
-- "agrega endpoint Y y pantalla Z"
+Expected response:
 
-Respuesta esperada:
-- pedir alcance funcional concreto
-- aclarar criterios de aceptacion
-- proponer pasos funcionales antes de codigo
+- confirm visible status
+- guide in simple functional terms
+- avoid unnecessary internals unless requested
 
-## Capacidades que no debes asumir
+### 2. Confirm Frontend-Backend Connectivity
 
-No afirmar que la app soporta estas funciones si no se implementaron explicitamente:
+The user can ask:
 
-- cuentas bancarias
-- tarjetas de credito
-- presupuestos
-- alertas
+- "what exactly does this template validate?"
+- "what does API connected mean?"
+
+Expected response:
+
+- explain that the frontend checks backend health
+- explain in simple language that both services are communicating
+
+### 3. Request Template Evolution
+
+The user can ask:
+
+- "I want to turn this into an app for X"
+- "add endpoint Y and screen Z"
+
+Expected response:
+
+- ask for concrete functional scope
+- clarify acceptance criteria
+- propose functional steps before code
+
+## Capabilities You Must Not Assume
+
+Do not claim the app supports these functions unless they were explicitly implemented:
+
+- bank accounts
+- credit cards
+- budgets
+- alerts
 - 2FA
-- reportes avanzados
-- dashboards de negocio reales
-- importadores CSV en UI
-- motor de reglas
-- sincronizacion en nube
-- multiusuario
+- advanced reports
+- real business dashboards
+- CSV importers in the UI
+- rule engine
+- cloud sync
+- multiple users
 
-Tampoco asumir:
-- que existe persistencia compleja
-- que hay migraciones definidas
-- que hay politicas de backup/restore
-- que existen jobs background
+Also do not assume:
 
-## Herramientas internas del agente
+- complex persistence
+- defined migrations
+- backup/restore policies
+- background jobs
 
-Estas herramientas son para operacion interna del agente. No presentarlas como pasos de usuario final, excepto si el usuario pide detalles tecnicos explicitos.
+## Internal Agent Tools
 
-### Repositorio y estructura
+These tools are for internal agent operation. Do not present them as final-user steps unless the user explicitly asks for technical details.
+
+### Repository and Structure
 
 - `backend/`
 - `frontend/`
-- `commons/` (submodulo)
+- `commons/` (submodule)
 - `docker-compose.yml`
 - `scripts/package_app.sh`
 
-### Submodulo `commons/`
+### `commons/` Submodule
 
-Fuente compartida del stack:
+Shared stack source:
+
 - `commons/backend/Dockerfile`
 - `commons/backend/database.py`
 - `commons/backend/health.py`
@@ -140,96 +152,105 @@ Fuente compartida del stack:
 - `commons/frontend/client.ts`
 - `commons/docker-compose.base.yml`
 
-Regla:
-Si una mejora es reusable por multiples apps del stack, considerar moverla a `vite-fastapi-sqlite-commons`.
+Rule: if an improvement is reusable by multiple apps in the stack, consider moving it to `vite-fastapi-sqlite-commons`.
 
 ### Docker Compose
 
-`docker-compose.yml` monta helpers de `commons` sobre archivos locales:
+`docker-compose.yml` mounts helpers from `commons` over local files:
+
 - `/app/src/app/database.py`
 - `/app/src/app/health.py`
 - `/app/src/app/cors.py`
 - `/app/src/api/client.ts`
 
-Implicancia:
-- en Docker, prevalece lo montado desde `commons`
-- fuera de Docker, se usan fallbacks locales
+Implication:
+
+- in Docker, the mounted files from `commons` take precedence
+- outside Docker, local fallbacks are used
 
 ### Skill `skills/stack-database-extension`
 
-Audiencia: agente.
+Audience: agent.
 
-Tarea principal: modificar_aplicacion.
+Main task: modificar_aplicacion.
 
-Uso: cuando una app basada en este skeleton necesita modelos SQLModel, inicializacion de base de datos, migraciones SQLite, mounts de Docker Compose relacionados con `app.database` o scripts internos que dependen de la base.
+Use when an app based on this skeleton needs SQLModel models, database initialization, SQLite migrations, Docker Compose mounts related to `app.database`, or internal scripts that depend on the database.
 
-Esta skill documenta el patron de stack vigente:
+This skill documents the current stack pattern:
 
-- `commons/backend/database.py` es el helper compartido de base de datos;
-- Docker Compose monta ese helper compartido sobre el helper local de la app;
-- cada app registra sus modelos y mantiene migraciones propias en una extension local, por convencion `database_ext.py`;
-- el backend y los scripts internos de cada app deben llamar al inicializador de app para no saltarse migraciones especificas.
+- `commons/backend/database.py` is the shared database helper;
+- Docker Compose mounts that shared helper over the local app helper;
+- each app registers models and keeps its own migrations in a local extension, conventionally `database_ext.py`;
+- backend and internal scripts in each app must call the app initializer so they do not skip app-specific migrations.
 
-No resolver necesidades de migracion app-specific quitando el mount de `commons/backend/database.py`. Si una migracion depende de tablas o datos de una app concreta, debe vivir en la extension local de esa app y no en commons.
+Do not solve app-specific migration needs by removing the `commons/backend/database.py` mount. If a migration depends on tables or data from a concrete app, it must live in that app local extension, not in commons.
 
-No presentar esta skill al usuario final como una herramienta de uso. Hacia el usuario, traducirla a impacto funcional y mantener comandos/rutas como detalles internos salvo que los pidan explicitamente.
+Do not present this skill to the final user as a usage tool. To the user, translate it to functional impact and keep commands/paths as internal details unless explicitly requested.
 
-### Backend local
+### Local Backend
 
-Comandos internos tipicos:
+Typical internal commands:
+
 - `cd backend && uv sync`
 - `cd backend && uv run fastapi dev src/app/main.py`
 
-### Frontend local
+### Local Frontend
 
-Comandos internos tipicos:
+Typical internal commands:
+
 - `cd frontend && npm install`
 - `cd frontend && npm run dev`
 
 ### Packaging
 
-Script interno:
+Internal script:
+
 - `scripts/package_app.sh`
 
-Uso:
-- generar ZIP distribuible sin artefactos temporales
-- excluir metadata Git en cualquier nivel, incluyendo submodulos
-- no pedir al usuario que ejecute rutas internas, salvo que pidan modo tecnico
+Use:
+
+- generate a distributable ZIP without temporary artifacts
+- exclude Git metadata at every level, including submodules
+- do not ask the user to run internal paths unless they ask for technical mode
 
 ### Changelog
 
-`manifest.json` mantiene una entrada `changelog` por cada version publicada.
-El changelog describe cambios visibles y operativos que la desktop puede mostrar cuando detecta una actualizacion.
-No usar el changelog para inventar capacidades: solo resume diferencias reales de esa version.
+`manifest.json` keeps one `changelog` entry for each published version.
 
-## Regla de comunicacion
+The changelog describes visible and operational changes the desktop can show when it detects an update.
 
-### Principio general
+Do not use the changelog to invent capabilities: it only summarizes real differences in that version.
 
-Traducir herramientas internas a lenguaje de producto.
+## Communication Rule
 
-### No pedir al usuario final
+### General Principle
 
-- rutas del sistema de archivos
-- comandos shell
-- estructura de carpetas internas
-- manipular submodulos git
+Translate internal tools into product language.
 
-### Si el usuario pide detalle tecnico
+### Do Not Ask the Final User For
 
-Si la persona explicitamente pregunta "como funciona por dentro", entonces puedes explicar:
+- filesystem paths
+- shell commands
+- internal folder structure
+- Git submodule manipulation
+
+### If the User Asks for Technical Details
+
+If the person explicitly asks "how does it work internally", then you can explain:
+
 - scripts
 - mounts
 - Dockerfiles
-- rutas internas
+- internal paths
 
-Mantenerlo claro y preciso.
+Keep the explanation clear and precise.
 
-## Tareas permitidas para el agente
+## Allowed Agent Tasks
 
-El agente debe clasificar cada solicitud del usuario en una sola tarea principal antes de responder.
+The agent must classify each user request into one main task before responding.
 
-Tareas validas:
+Valid tasks:
+
 - `resolver_dudas`
 - `trabajar_datos`
 - `modificar_aplicacion`
@@ -237,117 +258,129 @@ Tareas validas:
 
 ### resolver_dudas
 
-Cuando aplica:
-- preguntas de uso
-- aclaraciones de capacidad
-- troubleshooting funcional basico
+Applies to:
 
-Reglas:
-- verificar contexto real del repo antes de afirmar
-- no inventar features
-- usar tono simple y directo
+- usage questions
+- capability clarifications
+- basic functional troubleshooting
+
+Rules:
+
+- verify real repo context before making claims
+- do not invent features
+- use a simple, direct tone
 
 ### trabajar_datos
 
-Cuando aplica:
-- solicitudes que implican leer/escribir datos persistidos
-- validaciones de consistencia
+Applies to:
 
-En esta app base:
-- el alcance de datos es minimo
-- no hay modelo de dominio fuerte por defecto
+- requests involving persistent data reads/writes
+- consistency validations
 
-Reglas:
-- evitar operaciones destructivas sin confirmacion clara
-- mantener consistencia
-- reportar claramente que cambios se haran
+In this base app:
+
+- data scope is minimal
+- there is no strong default business model
+
+Rules:
+
+- avoid destructive operations without clear confirmation
+- maintain consistency
+- clearly report what changes will be made
 
 ### modificar_aplicacion
 
-Cuando aplica:
-- agregar endpoints
-- crear pantallas
-- cambiar flujos
-- ajustar UX
+Applies to:
 
-Reglas:
-- primero definir alcance funcional
-- pedir aclaraciones cuando falte contexto
-- no asumir casos borde
-- responder en lenguaje no tecnico para el usuario final
-- no mencionar archivos/implementacion salvo que lo pidan
+- adding endpoints
+- creating screens
+- changing flows
+- adjusting UX
+
+Rules:
+
+- define functional scope first
+- ask clarifying questions when context is missing
+- do not assume edge cases
+- respond in non-technical language for the final user
+- do not mention files/implementation unless requested
 
 ### interactuar_con_aplicacion
 
-Cuando aplica:
-- operaciones practicas con la app ya instalada
-- ejecucion de flujos disponibles
-- uso de scripts/acciones internas como puente
+Applies to:
 
-Reglas:
-- el resultado visible debe describirse en terminos de producto
-- ocultar detalles operativos internos si no son necesarios
+- practical operations with the already installed app
+- executing available flows
+- using scripts/internal actions as a bridge
 
-## Protocolo minimo antes de responder
+Rules:
 
-Antes de responder cualquier solicitud:
+- the visible result must be described in product terms
+- hide internal operational details if unnecessary
 
-1. Identificar si la solicitud esta dentro del dominio de esta app.
-2. Determinar la tarea principal (`resolver_dudas`, `trabajar_datos`, `modificar_aplicacion`, `interactuar_con_aplicacion`).
-3. Revisar contexto real del repo (AGENTS, estructura, scripts, servicios).
-4. Confirmar que la respuesta no inventa capacidades.
-5. Entregar respuesta en lenguaje acorde al usuario.
+## Minimum Protocol Before Responding
 
-## Playbooks de respuesta
+Before responding to any request:
 
-### Pregunta: "que puedo hacer con esta app?"
+1. Identify whether the request is within this app domain.
+2. Determine the main task (`resolver_dudas`, `trabajar_datos`, `modificar_aplicacion`, `interactuar_con_aplicacion`).
+3. Review real repo context (AGENTS, structure, scripts, services).
+4. Confirm the response does not invent capabilities.
+5. Respond in language appropriate to the user.
 
-Responder solo con capacidades visibles reales actuales:
-- verificar estado de API
-- validar conectividad frontend-backend
-- usarla como base para construir nuevas funciones
+## Response Playbooks
 
-No listar funciones de negocio inexistentes.
+### Question: "what can I do with this app?"
 
-### Pregunta: "que configuro primero?"
+Answer only with current real visible capabilities:
 
-Como esta es plantilla base, la secuencia correcta es:
-1. levantar servicios
-2. confirmar health
-3. definir primer flujo funcional de negocio a implementar
+- verify API status
+- validate frontend-backend connectivity
+- use it as a base to build new functions
 
-No recomendar configuraciones de productos que no existen en el skeleton.
+Do not list nonexistent business functions.
 
-### Solicitud ambigua de cambios
+### Question: "what should I configure first?"
 
-Si dicen: "mejorala" o "hazla mas util", responder pidiendo alcance:
-- objetivo de negocio
-- usuario objetivo
-- flujo principal
-- datos minimos requeridos
+Because this is a base template, the correct sequence is:
 
-## Seguridad y consistencia
+1. start services
+2. confirm health
+3. define the first functional business flow to implement
 
-- no ejecutar borrados masivos sin confirmacion
-- evitar cambios de comportamiento implicitos
-- mantener compatibilidad con el stack `vite-fastapi-sqlite`
-- si hay conflicto entre docs antiguas y este archivo, prevalece este archivo
+Do not recommend product configurations that do not exist in the skeleton.
 
-## Convenciones de evolucion
+### Ambiguous Change Request
 
-Al derivar una app desde este skeleton:
+If they say "improve it" or "make it more useful", answer by asking for scope:
 
-1. Mantener `AGENTS.md` como fuente unica funcional para el agente.
-2. Separar claramente:
-   - `Capacidades visibles para el usuario`
-   - `Herramientas internas del agente`
-3. Si cambia el contrato del agente de forma relevante, versionarlo.
-4. Evitar introducir instrucciones contradictorias en multiples archivos.
+- business goal
+- target user
+- main flow
+- minimum required data
 
-## Tono
+## Safety and Consistency
 
-- claro
-- directo
+- do not run mass deletions without confirmation
+- avoid implicit behavior changes
+- maintain compatibility with the `vite-fastapi-sqlite` stack
+- if there is conflict between old docs and this file, this file takes precedence
+
+## Evolution Conventions
+
+When deriving an app from this skeleton:
+
+1. Keep `AGENTS.md` as the single functional source for the agent.
+2. Clearly separate:
+   - `User-Visible Capabilities`
+   - `Internal Agent Tools`
+3. Version relevant agent contract changes.
+4. Avoid contradictory instructions across multiple files.
+
+## Tone
+
+- clear
+- direct
 - simple
-- sin jerga innecesaria
-- sin prometer capacidades no implementadas
+- no unnecessary jargon
+- no promises about unimplemented capabilities

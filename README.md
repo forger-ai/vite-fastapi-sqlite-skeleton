@@ -1,78 +1,78 @@
 # vite-fastapi-sqlite-skeleton
 
-Plantilla base para nuevas apps Forger del stack `vite-fastapi-sqlite`.
+Base template for new Forger apps using the `vite-fastapi-sqlite` stack.
 
-Este repo **sí depende del common del stack** y debe usarse con submódulos.
-El objetivo es que cualquier app nueva herede el mismo runtime y utilidades compartidas
-(`Dockerfile`, `database.py`, `health.py`, `cors.py`, `client.ts`) desde `commons/`.
+This repo **does depend on the stack common package** and must be used with submodules.
+The goal is for every new app to inherit the same runtime and shared utilities
+(`Dockerfile`, `database.py`, `health.py`, `cors.py`, `client.ts`) from `commons/`.
 
-## Dependencia del stack common
+## Stack Common Dependency
 
-- Submódulo requerido: `commons/`
-- Remote esperado: `git@github.com:forger-ai/vite-fastapi-sqlite-commons.git`
-- Este skeleton está preparado para que Docker monte archivos de `commons` sobre:
+- Required submodule: `commons/`
+- Expected remote: `git@github.com:forger-ai/vite-fastapi-sqlite-commons.git`
+- This skeleton is prepared for Docker to mount files from `commons` over:
   - `backend/src/app/database.py`
   - `backend/src/app/health.py`
   - `backend/src/app/cors.py`
   - `frontend/src/api/client.ts`
 
-Esto evita drift entre apps y centraliza cambios transversales del stack.
+This avoids drift between apps and centralizes cross-cutting stack changes.
 
-## Estructura
+## Structure
 
 ```text
 vite-fastapi-sqlite-skeleton/
 ├── .gitmodules
 ├── commons/                         # submodule: stack shared code
-├── docker-compose.yml               # usa dockerfiles/helpers desde commons
+├── docker-compose.yml               # uses dockerfiles/helpers from commons
 ├── backend/
 │   ├── pyproject.toml
 │   ├── data/
 │   └── src/app/
 │       ├── main.py
-│       ├── database.py              # fallback local, override por commons en Docker
-│       ├── health.py                # fallback local, override por commons en Docker
-│       ├── cors.py                  # fallback local, override por commons en Docker
+│       ├── database.py              # local fallback, overridden by commons in Docker
+│       ├── health.py                # local fallback, overridden by commons in Docker
+│       ├── cors.py                  # local fallback, overridden by commons in Docker
 │       └── models.py
 ├── frontend/
 │   ├── package.json
 │   └── src/
 │       ├── App.tsx
 │       ├── theme.ts
-│       └── api/client.ts            # fallback local, override por commons en Docker
+│       └── api/client.ts            # local fallback, overridden by commons in Docker
 └── scripts/
     └── package_app.sh
 ```
 
-## Clonado correcto
+## Correct Clone
 
-Siempre clonar con submódulos:
+Always clone with submodules:
 
 ```bash
 git clone --recurse-submodules git@github.com:forger-ai/vite-fastapi-sqlite-skeleton.git
 ```
 
-Si ya clonaste sin submódulos:
+If you already cloned without submodules:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-## Desarrollo recomendado (Docker + commons)
+## Recommended Development (Docker + commons)
 
 ```bash
 docker compose up --build
 ```
 
-Servicios:
+Services:
 
 - Backend: `http://localhost:8000`
 - Frontend: `http://localhost:5173`
 - Health: `GET http://localhost:8000/api/health`
 
-## Desarrollo local sin Docker (fallback)
+## Local Development without Docker (fallback)
 
-Puedes correr localmente sin compose usando las versiones fallback del repo:
+You can run locally without Compose using the repo fallback versions:
 
 ```bash
 cd backend
@@ -86,9 +86,9 @@ npm install
 npm run dev
 ```
 
-Esto sirve para iterar rápido, pero el camino canónico del stack es Docker con mounts a `commons`.
+This is useful for quick iteration, but the canonical stack path is Docker with mounts to `commons`.
 
-## Actualizar el common del stack
+## Update the Stack Common
 
 ```bash
 git submodule update --remote commons
@@ -96,13 +96,13 @@ git add commons
 git commit -m "chore: bump commons"
 ```
 
-## Convención para nuevas apps derivadas
+## Convention for New Derived Apps
 
-Cuando crees una app desde este skeleton:
+When creating an app from this skeleton:
 
-1. Mantén `commons/` como submódulo.
-2. Conserva el patrón de mounts de `docker-compose.yml`.
-3. Evita copiar y forkear archivos compartidos si no es estrictamente necesario.
-4. Si agregas utilidades reutilizables para múltiples apps, súbelas a `vite-fastapi-sqlite-commons`.
-5. Mantén `manifest.json` con una entrada de `changelog` por cada versión publicada.
-6. Verifica que el ZIP distribuible no incluya `.git` en ningún nivel.
+1. Keep `commons/` as a submodule.
+2. Preserve the `docker-compose.yml` mount pattern.
+3. Avoid copying and forking shared files unless strictly necessary.
+4. If you add reusable utilities for multiple apps, move them to `vite-fastapi-sqlite-commons`.
+5. Keep `manifest.json` with one `changelog` entry for each published version.
+6. Verify that the distributable ZIP does not include `.git` at any level.
