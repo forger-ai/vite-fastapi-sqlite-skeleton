@@ -41,7 +41,11 @@
         "description": "Usa el espacio privado de la app para guardar estado y datos propios."
       }
     ],
-    "supported_platforms": ["darwin_arm64", "darwin_x64"]
+    "supported_platforms": [
+      "darwin_arm64",
+      "darwin_x64"
+    ],
+    "beta": true
   },
   "services": [
     {
@@ -52,12 +56,19 @@
       "command": "uv run fastapi dev src/app/main.py --host 0.0.0.0 --port 8000",
       "healthcheck": "/api/health",
       "environment": {
-        "DATABASE_URL": "sqlite:////app/data/app.sqlite",
+        "DATABASE_URL": "sqlite:///{app_data}/app.sqlite",
         "CORS_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173"
       },
       "volumes": [
-        { "source": "./backend", "target": "/app" },
-        { "source": "./backend/data", "target": "/app/data", "persist": true }
+        {
+          "source": "./backend",
+          "target": "/app"
+        },
+        {
+          "source": "./backend/data",
+          "target": "/app/data",
+          "persist": true
+        }
       ]
     },
     {
@@ -69,7 +80,9 @@
       "environment": {
         "VITE_API_BASE_URL": "http://localhost:8000"
       },
-      "depends_on": ["backend"]
+      "depends_on": [
+        "backend"
+      ]
     }
   ],
   "mcp": {
@@ -78,10 +91,12 @@
     "command": "python -m app.mcp_server",
     "healthcheck": "/health",
     "environment": {
-      "DATABASE_URL": "sqlite:////app/data/app.sqlite",
+      "DATABASE_URL": "sqlite:///{app_data}/app.sqlite",
       "PYTHONPATH": "./src"
     },
     "toolTimeoutSec": 600
   },
-  "skills": ["./skills/stack-database-extension"]
+  "skills": [
+    "./skills/stack-database-extension"
+  ]
 }
