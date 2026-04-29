@@ -72,5 +72,16 @@
       "depends_on": ["backend"]
     }
   ],
+  "mcp": {
+    "type": "http",
+    "context": "./backend",
+    "command": "python -m app.mcp_server",
+    "healthcheck": "/health",
+    "environment": {
+      "DATABASE_URL": "sqlite:////app/data/app.sqlite",
+      "PYTHONPATH": "./src"
+    },
+    "toolTimeoutSec": 600
+  },
   "skills": ["./skills/stack-database-extension"]
 }
