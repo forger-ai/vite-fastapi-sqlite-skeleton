@@ -17,12 +17,14 @@ uv.lock
 node_modules/
 dist/
 .vite/
+frontend/package-lock.json
 *.local
 
 # Env files
 .env
 .env.*
 !.env.example
+.version.dev
 
 # OS
 .DS_Store

@@ -7,10 +7,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { get } from "./api/client";
+import { useI18n } from "./i18n";
 
 type HealthStatus = "loading" | "ok" | "error";
 
 export default function App() {
+  const t = useI18n();
   const [status, setStatus] = useState<HealthStatus>("loading");
 
   useEffect(() => {
@@ -32,18 +34,18 @@ export default function App() {
         }}
       >
         <Typography variant="h4" fontWeight={700}>
-          skeleton
+          {t.app.title}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          FastAPI + uv · Vite + React + MUI
+          {t.app.subtitle}
         </Typography>
 
         {status === "loading" && <CircularProgress size={20} />}
         {status === "ok" && (
-          <Chip label="API conectada" color="success" variant="outlined" />
+          <Chip label={t.status.ok} color="success" variant="outlined" />
         )}
         {status === "error" && (
-          <Chip label="API no disponible" color="error" variant="outlined" />
+          <Chip label={t.status.error} color="error" variant="outlined" />
         )}
       </Box>
     </Container>
