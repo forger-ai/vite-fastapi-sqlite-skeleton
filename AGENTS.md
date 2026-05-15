@@ -6,6 +6,8 @@ This file is the main functional and operational context source for this app.
 
 If `manifest.json` exists, use it for installation, service, and script metadata. Do not use it as the list of user-visible capabilities.
 
+`cloudMessaging` in `manifest.json` controls whether Forger Desktop exposes cross-user message helpers to the app. It is an internal platform capability. Do not describe it as a visible app feature unless the app UI and documentation also implement a user-facing messaging workflow.
+
 The agent must always distinguish between:
 
 - user-visible capabilities

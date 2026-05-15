@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.cors import allowed_origins
 from app.database import init_db
 from app.health import router as health_router
+from app.realtime import create_realtime_router
 
 app = FastAPI(
     title="Skeleton API",
@@ -24,6 +25,7 @@ app.add_middleware(
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(health_router, prefix="/api")
+app.include_router(create_realtime_router())
 
 
 @app.on_event("startup")

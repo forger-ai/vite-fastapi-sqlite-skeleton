@@ -106,3 +106,18 @@ When creating an app from this skeleton:
 4. If you add reusable utilities for multiple apps, move them to `vite-fastapi-sqlite-commons`.
 5. Keep `manifest.json` with one `changelog` entry for each published version.
 6. Verify that the distributable ZIP does not include `.git` at any level.
+
+## Cloud Messaging Contract
+
+Apps that need to send user-to-user messages through Forger Desktop declare:
+
+```json
+{
+  "cloudMessaging": {
+    "enabled": true,
+    "defaultDelivery": "persistent"
+  }
+}
+```
+
+When disabled, `window.forgerApp.messages` is not available to the app. When enabled, Forger Desktop exposes message send/list helpers and enforces friend permissions, per-app approval, delivery mode, and end-to-end encryption. Supported delivery values are `persistent` and `ephemeral`.
