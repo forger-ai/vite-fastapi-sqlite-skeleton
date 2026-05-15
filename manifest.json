@@ -96,6 +96,14 @@
     },
     "toolTimeoutSec": 600
   },
+  "tools": {
+    "required": [],
+    "optional": []
+  },
+  "cloudMessaging": {
+    "enabled": false,
+    "defaultDelivery": "persistent"
+  },
   "skills": [
     "./skills/stack-database-extension"
   ]

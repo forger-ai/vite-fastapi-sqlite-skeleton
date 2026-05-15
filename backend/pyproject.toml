@@ -8,6 +8,7 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "sqlmodel>=0.0.22",
+    "websockets>=13",
 ]
 
 [project.optional-dependencies]
