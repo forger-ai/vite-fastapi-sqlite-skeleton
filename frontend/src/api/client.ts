@@ -1,8 +1,8 @@
 /**
- * HTTP client base.
+ * HTTP client shared across all vite-fastapi-sqlite apps.
  *
- * La URL del backend se resuelve desde VITE_API_BASE_URL (inyectada por Forger
- * al levantar la app) o cae al default de desarrollo local.
+ * The backend URL is injected by Forger via VITE_API_BASE_URL at runtime.
+ * Falls back to localhost:8000 for local development.
  */
 
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
@@ -92,6 +92,9 @@ export const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
 
 export const patch = <T>(path: string, body: unknown, signal?: AbortSignal) =>
   request<T>(path, { method: "PATCH", body, signal });
+
+export const put = <T>(path: string, body: unknown, signal?: AbortSignal) =>
+  request<T>(path, { method: "PUT", body, signal });
 
 export const del = <T>(path: string, signal?: AbortSignal) =>
   request<T>(path, { method: "DELETE", signal });

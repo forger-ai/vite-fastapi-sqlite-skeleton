@@ -5,7 +5,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
 import { en } from "./en";
 import { es } from "./es";
@@ -35,6 +34,9 @@ function normalizeLocale(value: string | null | undefined): Locale {
 }
 
 function browserLocale(): Locale {
+  const params = new URLSearchParams(window.location.search);
+  const localeParam = params.get("locale");
+  if (localeParam) return normalizeLocale(localeParam);
   if (typeof navigator === "undefined") return "es";
   for (const language of navigator.languages ?? []) {
     if (normalizeLocale(language) === "en") return "en";
@@ -43,22 +45,7 @@ function browserLocale(): Locale {
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(browserLocale);
-
-  useEffect(() => {
-    let active = true;
-    void window.forgerApp
-      ?.getContext?.()
-      .then((context) => {
-        if (active) setLocale(normalizeLocale(context?.locale));
-      })
-      .catch(() => {
-        if (active) setLocale(browserLocale());
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const locale = browserLocale();
 
   useEffect(() => {
     document.documentElement.lang = locale;
