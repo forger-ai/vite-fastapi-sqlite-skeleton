@@ -100,6 +100,7 @@
     "defaultDelivery": "persistent"
   },
   "skills": [
-    "./skills/stack-database-extension"
+    "./skills/stack-database-extension",
+    "./skills/forger-locale-module"
   ]
 }

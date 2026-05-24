@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.cors import allowed_origins
 from app.database_ext import init_app_db
+from app.forger_context import router as forger_context_router
 from app.health import router as health_router
 from app.realtime import create_realtime_router
 
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health_router, prefix="/api")
+    app.include_router(forger_context_router)
     app.include_router(create_realtime_router())
 
     return app

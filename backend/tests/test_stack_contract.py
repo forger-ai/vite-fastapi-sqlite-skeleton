@@ -63,6 +63,45 @@ def test_realtime_router_is_registered(skeleton_app: object) -> None:
     assert "/api/realtime/ws" in websocket_paths
 
 
+def test_forger_context_router_is_registered_with_fallback(skeleton_app: object) -> None:
+    with TestClient(skeleton_app) as client:
+        response = client.get("/api/forger/context")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "locale": "es",
+        "rawLocale": None,
+        "source": "fallback",
+    }
+
+
+def test_forger_context_normalizes_desktop_payloads(
+    skeleton_app: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app import forger_context
+
+    monkeypatch.setattr(
+        forger_context,
+        "get_app_context",
+        lambda: {"locale": "en", "rawLocale": "en-US"},
+    )
+    with TestClient(skeleton_app) as client:
+        desktop = client.get("/api/forger/context")
+    assert desktop.json() == {
+        "locale": "en",
+        "rawLocale": "en-US",
+        "source": "desktop",
+    }
+
+    monkeypatch.setattr(forger_context, "get_app_context", lambda: "bad")
+    assert forger_context.runtime_context() == {
+        "locale": "es",
+        "rawLocale": None,
+        "source": "fallback",
+    }
+
+
 def test_app_database_extension_initializes_declared_models(skeleton_app: object) -> None:
     from app.database import engine
     from app.database_ext import init_app_db
