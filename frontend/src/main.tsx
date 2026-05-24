@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import App from "./App.tsx";
 import { I18nProvider } from "./i18n";
-import theme from "./theme.ts";
+import theme from "./theme/theme";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
