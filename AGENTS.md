@@ -4,16 +4,36 @@
 
 This file is the main functional and operational context source for this app.
 
-If `manifest.json` exists, use it for installation, service, and script metadata. Do not use it as the list of user-visible capabilities.
+If `manifest.json` exists, use it for installation, service, and script metadata. Do not use it as the list of visible app capabilities.
+
+When `.agents/skills/forger-manifest-authoring` exists, read it before creating or editing `manifest.json`.
+
+When `.agents/skills/forger-desktop-runtime-bridge` exists, read it before wiring app backend routes that start, poll, cancel, or resume manifest promptTemplate tasks or manifest agent threads through Forger Desktop.
 
 `cloudMessaging` in `manifest.json` controls whether Forger Desktop exposes cross-user message helpers to the app. It is an internal platform capability. Do not describe it as a visible app feature unless the app UI and documentation also implement a user-facing messaging workflow.
 
 The agent must always distinguish between:
 
-- user-visible capabilities
+- visible app capabilities
 - internal agent tools
 
-Key rule: internal tools can be used to execute tasks, but they must not be presented as the user interface or as steps the user must run manually.
+Key rule: internal tools can be used to execute tasks, but they must not be presented as the app interface or as steps the person must run manually.
+
+## Manifest Declaration Roles
+
+The manifest can declare several agent-facing surfaces. They have different roles and must not be treated as interchangeable.
+
+- `promptTemplates` are atomic, form-backed task prompts. Use them for one clearly bounded job with declared inputs, deterministic completion criteria, and no expectation of ongoing chat state.
+- `promptTemplates` must use `title`, `description`, `arguments`, and `prompt`. Do not use `name` or `inputs` for prompt templates.
+- Prompt template example: `"promptTemplates": [{ "id": "load-records", "title": "Load records", "description": "Read a shared file and load confirmed records.", "arguments": [{ "name": "file", "type": "file", "required": true, "acceptedFileTypes": [".csv", ".xlsx"] }], "prompt": "Read {{file}}, validate the rows, and load the confirmed records." }]`.
+- `agents` are resumable app coworkers or orchestrators. Use them for ongoing conversations, multi-turn planning, steering, review, or work that needs a thread to continue later. Manifest agents can declare provider-aware `runtimeRecommendations` for `codex` and `claude`; for new manifests, prefer those recommendations over a rigid fixed runtime unless the app truly requires a specific provider or model.
+- `agents` must use `title` plus either `initialPrompt` or `prompts.initial.body`. Do not use `name` or `prompt` for manifest agents.
+- Preferred agent example: `"agents": [{ "id": "advisor", "title": "Advisor", "description": "A resumable coworker that helps you review decisions.", "kind": "thread_interface", "prompts": { "initial": { "body": "You are {{advisor_name}}. Help with this goal: {{goal}}.", "variables": { "advisor_name": { "type": "text", "required": true }, "goal": { "type": "text", "required": true } } }, "resume": { "body": "Continue helping with the current goal. New context: {{context}}.", "variables": { "context": { "type": "text", "required": false } } }, "steer": { "body": "Adjust the current work with this instruction: {{instruction}}.", "variables": { "instruction": { "type": "text", "required": true } } } } }]`.
+- `tools` declares official Forger tools the app is allowed to access through Forger. Today the only official tool is Gmail. Do not use `tools` for app-owned data actions, scripts, MCP servers, or visible features.
+- `tools.required` and `tools.optional` must contain objects, not strings. Each object must include `toolId`, `reason`, and `actions`.
+- Gmail manifest declaration example: `"tools": { "required": [], "optional": [{ "toolId": "gmail", "reason": "Lets this app help you search, read, download attachments from, or draft/send email when you explicitly ask.", "actions": ["gmail.connection.status", "gmail.search_messages", "gmail.read_thread", "gmail.read_attachment", "gmail.send_email"] }] }`.
+- `appSecrets` are declarations that name credentials an app may need. They must never contain secret values, and secret values must never be copied into prompts, memory, logs, generated files, or final messages.
+- `scripts` are internal fallback automation for tasks not covered by app MCP tools, backend APIs, or another structured app-owned interface. Prefer app-owned structured interfaces before scripts when they exist.
 
 ## Product Identity
 
@@ -35,14 +55,14 @@ It is not a final business app. It is a starting point.
 
 ## Target User
 
-### Primary User
+### Primary Person
 
-- teams building new apps on Forger
-- operators who want to quickly validate that the local runtime works
+- the person turning this skeleton into their own local Forger app
+- the person who wants to quickly validate that their local app runtime works
 
-### Final User (if used as a demo)
+### Demo Use
 
-- non-technical people who only need to confirm the app is alive
+- the person checking that their app is alive
 
 ## Real Functional Scope
 
@@ -64,13 +84,13 @@ It is not a final business app. It is a starting point.
 
 The agent must not invent capabilities outside this scope.
 
-## User-Visible Capabilities
+## Visible Capabilities
 
-These are the actions you can present as real to the final user.
+These are the actions you can present as real to the person using the app.
 
 ### 1. Verify General App Status
 
-The user can ask:
+Examples:
 
 - "is the app running?"
 - "does the backend respond?"
@@ -84,7 +104,7 @@ Expected response:
 
 ### 2. Confirm Frontend-Backend Connectivity
 
-The user can ask:
+Examples:
 
 - "what exactly does this template validate?"
 - "what does API connected mean?"
@@ -96,7 +116,7 @@ Expected response:
 
 ### 3. Request Template Evolution
 
-The user can ask:
+Examples:
 
 - "I want to turn this into an app for X"
 - "add endpoint Y and screen Z"
@@ -121,7 +141,7 @@ Do not claim the app supports these functions unless they were explicitly implem
 - CSV importers in the UI
 - rule engine
 - cloud sync
-- multiple users
+- multi-account or team workflows
 
 Also do not assume:
 
@@ -132,7 +152,7 @@ Also do not assume:
 
 ## Internal Agent Tools
 
-These tools are for internal agent operation. Do not present them as final-user steps unless the user explicitly asks for technical details.
+These tools are for internal agent operation. Do not present them as app usage steps unless the person explicitly asks for technical details.
 
 ### Repository and Structure
 
@@ -187,7 +207,7 @@ This skill documents the current stack pattern:
 
 Do not solve app-specific migration needs by removing the `commons/backend/database.py` mount. If a migration depends on tables or data from a concrete app, it must live in that app local extension, not in commons.
 
-Do not present this skill to the final user as a usage tool. To the user, translate it to functional impact and keep commands/paths as internal details unless explicitly requested.
+Do not present this skill as a usage tool. Translate it to functional impact and keep commands/paths as internal details unless explicitly requested.
 
 ### Local Backend
 
@@ -213,7 +233,7 @@ Use:
 
 - generate a distributable ZIP without temporary artifacts
 - exclude Git metadata at every level, including submodules
-- do not ask the user to run internal paths unless they ask for technical mode
+- do not ask the person to run internal paths unless they ask for technical mode
 
 ### Changelog
 
@@ -304,7 +324,7 @@ Rules:
 - define functional scope first
 - ask clarifying questions when context is missing
 - do not assume edge cases
-- respond in non-technical language for the final user
+- respond in non-technical language for the person using the app
 - do not mention files/implementation unless requested
 
 ### interactuar_con_aplicacion
@@ -328,7 +348,7 @@ Before responding to any request:
 2. Determine the main task (`resolver_dudas`, `trabajar_datos`, `modificar_aplicacion`, `interactuar_con_aplicacion`).
 3. Review real repo context (AGENTS, structure, scripts, services).
 4. Confirm the response does not invent capabilities.
-5. Respond in language appropriate to the user.
+5. Respond in the language used in the request.
 
 ## Response Playbooks
 
@@ -357,7 +377,7 @@ Do not recommend product configurations that do not exist in the skeleton.
 If they say "improve it" or "make it more useful", answer by asking for scope:
 
 - business goal
-- target user
+- personal goal
 - main flow
 - minimum required data
 
@@ -378,6 +398,21 @@ When deriving an app from this skeleton:
    - `Internal Agent Tools`
 3. Version relevant agent contract changes.
 4. Avoid contradictory instructions across multiple files.
+
+Forger saves applied app changes as internal versions. After implementing a requested change, save it as a new internal version before finishing. If the person reviews the result and asks for an adjustment, save that adjustment as another internal version. Use commits as the internal rollback mechanism, but talk about saved versions and previous versions unless technical details are requested.
+
+## New App Creation Standards
+
+When turning this skeleton into a concrete app, define the first real personal flow before expanding infrastructure. The app should remain local-first, understandable to the person using it, and consistent with the `vite-fastapi-sqlite` stack.
+
+- For non-trivial behavior, write or update BDD/spec tests before implementation. Cover the backend behavior, frontend flow, and app integration point that prove the requested behavior.
+- Where the app or stack enforces coverage thresholds, treat 100% coverage as the target for affected backend/frontend surfaces. If complete coverage is not practical, record the specific gap and why it remains.
+- Build frontend changes as a browser-safe Vite React app using MUI. Keep screens mobile-consistent and do not add Electron, Node, preload, `ipcRenderer`, `contextBridge`, or `window.forgerApp` dependencies to frontend code.
+- Keep React frontend code in the feature-first structure: `frontend/src/app` for root wiring, `frontend/src/features/<area>` for domain screens and feature-local components/hooks, `frontend/src/components` for cross-feature reusable UI, `frontend/src/api` for backend contracts, `frontend/src/lib` for pure helpers, `frontend/src/i18n` for copy, and `frontend/src/theme` for MUI theme. Keep `App.tsx` thin.
+- Keep persistence, validation, import/export rules, secret usage, MCP tools, app scripts, and privileged Forger integration in the backend. The frontend sends intent and renders state; it does not own the only copy of business rules.
+- Model SQLite data with explicit SQLModel tables, typed columns, constraints, relationships, and migrations. Do not add JSON columns unless the data is genuinely schemaless and the reason is documented in the app contract or migration notes.
+- Keep secrets out of prompts, memory, logs, screenshots, generated files, test fixtures, and final messages. Manifest `appSecrets` entries declare requirements only; they never store values.
+- Keep reusable stack infrastructure in `commons`. Keep app business rules, app copy, screens, seeds, prompts, product-specific scripts, and domain tests in the app repo.
 
 ## Tone
 
