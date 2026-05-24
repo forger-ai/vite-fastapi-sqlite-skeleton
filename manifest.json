@@ -89,8 +89,8 @@
     },
     "toolTimeoutSec": 600
   },
-  "localNetworkShare": false,
-  "remoteTunnel": false,
+  "localNetworkShare": true,
+  "remoteTunnel": true,
   "tools": {
     "required": [],
     "optional": []
