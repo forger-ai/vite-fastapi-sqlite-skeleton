@@ -9,10 +9,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
-
 TERMINAL_RUN_STATUSES = {"completed", "failed", "canceled"}
+TERMINAL_TASK_STATUSES = {"completed", "failed", "canceled"}
 
 
 class ForgerDesktopRuntimeError(RuntimeError):
@@ -34,6 +35,120 @@ def is_desktop_runtime_available() -> bool:
     return bool(_config_or_none())
 
 
+def get_agent_task_status() -> dict[str, Any]:
+    return _request("GET", "/agent-tasks/status", None)
+
+
+def get_app_context() -> dict[str, Any]:
+    return _request("GET", "/context", None)
+
+
+def start_agent_task(
+    *,
+    template_id: str,
+    locale: str | None = None,
+    arguments: dict[str, Any] | None = None,
+    variables: dict[str, Any] | None = None,
+    attachments: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    return _request(
+        "POST",
+        "/agent-tasks",
+        {
+            "templateId": template_id,
+            "locale": locale or None,
+            "arguments": arguments or None,
+            "variables": variables or None,
+            "attachments": attachments or None,
+        },
+    )
+
+
+def get_agent_task(run_id: str) -> dict[str, Any] | None:
+    return _request("GET", f"/agent-tasks/{run_id}", None)
+
+
+def cancel_agent_task(run_id: str) -> dict[str, Any]:
+    return _request("POST", f"/agent-tasks/{run_id}/cancel", {})
+
+
+def wait_for_task(
+    *,
+    run_id: str,
+    timeout_seconds: int = 600,
+    poll_interval_seconds: float = 1.0,
+) -> dict[str, Any]:
+    deadline = time.monotonic() + max(1, timeout_seconds)
+    last: dict[str, Any] | None = None
+    while time.monotonic() < deadline:
+        task = get_agent_task(run_id)
+        if task:
+            last = task
+            if str(task.get("status") or "") in TERMINAL_TASK_STATUSES:
+                return task
+        time.sleep(max(0.2, poll_interval_seconds))
+    raise ForgerDesktopRuntimeError(f"agent task timed out: {last or run_id}")
+
+
+def start_manifest_agent_thread(
+    *,
+    agent_id: str,
+    title: str | None = None,
+    variables: dict[str, Any] | None = None,
+    runtime: dict[str, Any] | None = None,
+    metadata: dict[str, Any] | None = None,
+    workspace_path: str | None = None,
+) -> dict[str, Any]:
+    return _request(
+        "POST",
+        f"/agents/{agent_id}/start",
+        {
+            "title": title or None,
+            "variables": variables or None,
+            "runtime": runtime or None,
+            "metadata": metadata or None,
+            "workspacePath": workspace_path or None,
+        },
+    )
+
+
+def resume_manifest_agent_thread(
+    *,
+    desktop_thread_id: str,
+    variables: dict[str, Any] | None = None,
+    runtime: dict[str, Any] | None = None,
+    workspace_path: str | None = None,
+) -> dict[str, Any]:
+    return _request(
+        "POST",
+        f"/agent-threads/{desktop_thread_id}/resume",
+        {
+            "variables": variables or None,
+            "runtime": runtime or None,
+            "workspacePath": workspace_path or None,
+        },
+    )
+
+
+def steer_manifest_agent_run(
+    *,
+    desktop_thread_id: str,
+    desktop_run_id: str,
+    variables: dict[str, Any] | None = None,
+    runtime: dict[str, Any] | None = None,
+    workspace_path: str | None = None,
+) -> dict[str, Any]:
+    return _request(
+        "POST",
+        f"/agent-threads/{desktop_thread_id}/runs/{desktop_run_id}/steer",
+        {
+            "variables": variables or None,
+            "runtime": runtime or None,
+            "workspacePath": workspace_path or None,
+        },
+    )
+
+
 def create_agent_thread(
     *,
     title: str,
@@ -43,18 +158,15 @@ def create_agent_thread(
     metadata: dict[str, Any] | None = None,
     workspace_path: str | None = None,
 ) -> dict[str, Any]:
-    return _request(
-        "POST",
-        "/agent-threads",
-        {
-            "title": title,
-            "manifestAgentId": manifest_agent_id,
-            "initialPrompt": initial_prompt,
-            "runtime": runtime or None,
-            "metadata": metadata or None,
-            "workspacePath": workspace_path or None,
-        },
+    thread = start_manifest_agent_thread(
+        agent_id=manifest_agent_id,
+        title=title,
+        variables={"message": initial_prompt},
+        runtime=runtime,
+        metadata=metadata,
+        workspace_path=workspace_path,
     )
+    return _with_legacy_thread_aliases(thread)
 
 
 def start_agent_run(
@@ -65,17 +177,17 @@ def start_agent_run(
     runtime: dict[str, Any] | None = None,
     workspace_path: str | None = None,
 ) -> dict[str, Any]:
-    return _request(
-        "POST",
-        f"/agent-threads/{desktop_thread_id}/runs",
-        {
-            "desktopThreadId": desktop_thread_id,
+    run = resume_manifest_agent_thread(
+        desktop_thread_id=desktop_thread_id,
+        variables={
             "message": message,
-            "context": context,
-            "runtime": runtime or None,
-            "workspacePath": workspace_path or None,
+            "context": context or "",
+            "session_state": context or "",
         },
+        runtime=runtime,
+        workspace_path=workspace_path,
     )
+    return _with_legacy_run_aliases(run)
 
 
 def get_agent_thread(desktop_thread_id: str) -> dict[str, Any] | None:
@@ -172,7 +284,7 @@ def _config() -> ForgerDesktopRuntimeConfig:
 
 
 def _config_or_none() -> ForgerDesktopRuntimeConfig | None:
-    url = os.getenv("FORGER_DESKTOP_RUNTIME_URL", "").rstrip("/")
+    url = normalize_runtime_url(os.getenv("FORGER_DESKTOP_RUNTIME_URL", ""))
     app_id = os.getenv("FORGER_DESKTOP_RUNTIME_APP_ID", "")
     secret = os.getenv("FORGER_DESKTOP_RUNTIME_SECRET", "")
     if not url or not app_id or not secret:
@@ -180,5 +292,38 @@ def _config_or_none() -> ForgerDesktopRuntimeConfig | None:
     return ForgerDesktopRuntimeConfig(url=url, app_id=app_id, secret=secret)
 
 
+def normalize_runtime_url(raw_url: str) -> str:
+    url = raw_url.strip().rstrip("/")
+    if not url:
+        return ""
+    parsed = urlsplit(url)
+    legacy_path = parsed.path.lower()
+    if "forgerapp" in legacy_path or "bridge" in legacy_path:
+        return urlunsplit((parsed.scheme, parsed.netloc, "", "", "")).rstrip("/")
+    return url
+
+
 def _strip_none(value: dict[str, Any]) -> dict[str, Any]:
     return {key: item for key, item in value.items() if item is not None}
+
+
+def _with_legacy_thread_aliases(thread: dict[str, Any]) -> dict[str, Any]:
+    desktop_thread_id = str(thread.get("desktop_thread_id") or "")
+    if desktop_thread_id and not thread.get("threadId"):
+        thread = {
+            **thread,
+            "threadId": desktop_thread_id,
+            "id": thread.get("id") or desktop_thread_id,
+        }
+    return thread
+
+
+def _with_legacy_run_aliases(run: dict[str, Any]) -> dict[str, Any]:
+    desktop_run_id = str(run.get("desktop_run_id") or "")
+    if desktop_run_id and not run.get("runId"):
+        run = {
+            **run,
+            "runId": desktop_run_id,
+            "id": run.get("id") or desktop_run_id,
+        }
+    return run
