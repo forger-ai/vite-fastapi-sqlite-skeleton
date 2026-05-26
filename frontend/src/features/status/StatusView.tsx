@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
+import type { ReactElement } from "react";
+import { AlertCircle, CheckCircle2, LoaderCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
-  Box,
-  Chip,
-  CircularProgress,
-  Container,
-  Typography,
-} from "@mui/material";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useI18n } from "@/i18n";
 import { getHealth } from "./api";
 
@@ -27,33 +30,38 @@ export function StatusView() {
     return () => controller.abort();
   }, []);
 
-  return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 2,
-        }}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          {t.app.title}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {t.app.subtitle}
-        </Typography>
+  const statusBadge = {
+    loading: (
+      <Badge variant="secondary" className="gap-2">
+        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+        {t.status.loading}
+      </Badge>
+    ),
+    ok: (
+      <Badge variant="success" className="gap-2">
+        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+        {t.status.ok}
+      </Badge>
+    ),
+    error: (
+      <Badge variant="destructive" className="gap-2">
+        <AlertCircle className="h-4 w-4" aria-hidden="true" />
+        {t.status.error}
+      </Badge>
+    ),
+  } satisfies Record<HealthStatus, ReactElement>;
 
-        {status === "loading" && <CircularProgress size={20} />}
-        {status === "ok" && (
-          <Chip label={t.status.ok} color="success" variant="outlined" />
-        )}
-        {status === "error" && (
-          <Chip label={t.status.error} color="error" variant="outlined" />
-        )}
-      </Box>
-    </Container>
+  return (
+    <main className="flex min-h-dvh items-center justify-center bg-background px-6 py-10 text-foreground">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>{t.app.title}</CardTitle>
+          <CardDescription>{t.app.subtitle}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          {statusBadge[status]}
+        </CardContent>
+      </Card>
+    </main>
   );
 }

@@ -1,7 +1,7 @@
 export const es = {
   app: {
     title: "skeleton",
-    subtitle: "FastAPI + uv · Vite + React + MUI",
+    subtitle: "FastAPI + uv · Vite + React + Tailwind/shadcn",
   },
   status: {
     loading: "Conectando...",

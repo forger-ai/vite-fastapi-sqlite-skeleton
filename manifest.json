@@ -1,7 +1,7 @@
 {
   "name": "vite-fastapi-sqlite-skeleton",
   "version": "0.1.0",
-  "description": "Base template for Forger apps using FastAPI, SQLite, Vite, React, and MUI.",
+  "description": "Base template for Forger apps using FastAPI, SQLite, Vite, React, Tailwind CSS, shadcn/ui, and Radix primitives.",
   "changelog": [
     {
       "version": "0.1.0",
@@ -25,14 +25,14 @@
       "language": "typescript",
       "framework": "react",
       "bundler": "vite",
-      "ui": "mui",
+      "ui": "tailwind-shadcn-radix",
       "node_version": "24"
     }
   },
   "catalog": {
     "display_name": "Skeleton",
     "short_description": "Base template for new local Forger apps.",
-    "description": "Skeleton validates the FastAPI backend, SQLite local storage shape, Vite React frontend, and MUI visual stack used by Forger apps.",
+    "description": "Skeleton validates the FastAPI backend, SQLite local storage shape, Vite React frontend, and Tailwind/shadcn/Radix visual stack used by Forger apps.",
     "category": "utilities",
     "supported_platforms": [
       "darwin_arm64",
