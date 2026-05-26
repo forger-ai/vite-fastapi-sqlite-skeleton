@@ -5,6 +5,8 @@ Base template for new Forger apps using the `vite-fastapi-sqlite` stack.
 This repo **does depend on the stack common package** and must be used with submodules.
 The goal is for every new app to inherit the same runtime and shared utilities
 (`Dockerfile`, `database.py`, `health.py`, `cors.py`, `client.ts`) from `commons/`.
+The frontend baseline is Vite + React with Tailwind CSS, shadcn/ui copied
+components, and Radix primitives for accessible headless behavior.
 
 ## Stack Common Dependency
 
@@ -15,6 +17,8 @@ The goal is for every new app to inherit the same runtime and shared utilities
   - `backend/src/app/health.py`
   - `backend/src/app/cors.py`
   - `frontend/src/api/client.ts`
+  - `frontend/src/api/forgerBrand.ts`
+  - `frontend/src/api/remoteTunnel.ts`
 
 This avoids drift between apps and centralizes cross-cutting stack changes.
 
@@ -36,9 +40,11 @@ vite-fastapi-sqlite-skeleton/
 │       └── models.py
 ├── frontend/
 │   ├── package.json
+│   ├── components.json             # shadcn/ui component configuration
 │   └── src/
 │       ├── App.tsx
-│       ├── theme.ts
+│       ├── components/ui/          # copied shadcn-style primitives
+│       ├── styles/globals.css      # Tailwind entrypoint and design tokens
 │       └── api/client.ts            # local fallback, overridden by commons in Docker
 └── scripts/
     └── package_app.sh
