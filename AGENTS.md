@@ -71,6 +71,8 @@ It is not a final business app. It is a starting point.
 - starts frontend and backend locally
 - responds to `GET /api/health` from the backend
 - shows API connectivity status in the frontend
+- uses TanStack Query for frontend server state
+- can refresh server state from the stack realtime channel
 - provides a base structure for expanding features
 
 ### What It Does Not Do Today

@@ -15,6 +15,7 @@ services:
       - ./backend:/app
       - ./backend/data:/app/data
       - ./commons/backend/database.py:/app/src/app/database.py
+      - ./commons/backend/background_jobs.py:/app/src/app/background_jobs.py
       - ./commons/backend/health.py:/app/src/app/health.py
       - ./commons/backend/cors.py:/app/src/app/cors.py
       - ./commons/backend/forger_desktop.py:/app/src/app/forger_desktop.py

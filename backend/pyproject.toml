@@ -57,6 +57,7 @@ branch = true
 source = ["src/app"]
 omit = [
     "tests/*",
+    "src/app/background_jobs.py",
     "src/app/cors.py",
     "src/app/database.py",
     "src/app/desktop_events.py",

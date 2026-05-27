@@ -20,7 +20,12 @@ export default defineConfig({
         statements: 100,
       },
       include: ["src/api/**/*.ts"],
-      exclude: ["src/api/client.ts", "src/api/remoteTunnel.ts"],
+      exclude: [
+        "src/api/client.ts",
+        "src/api/forgerBrand.ts",
+        "src/api/realtime.ts",
+        "src/api/remoteTunnel.ts",
+      ],
     },
   },
 });
