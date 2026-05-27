@@ -105,7 +105,7 @@ def test_forger_context_normalizes_desktop_payloads(
 def test_app_database_extension_initializes_declared_models(skeleton_app: object) -> None:
     import asyncio
 
-    from app import background_jobs
+    from app import background_jobs, desktop_agent_jobs, desktop_task_jobs
     from app.database import engine
     from app.database_ext import init_app_db
     from app.models import AppSetting, utcnow
@@ -118,4 +118,9 @@ def test_app_database_extension_initializes_declared_models(skeleton_app: object
     assert background_jobs.BackgroundJob(job_type="demo.ready").job_type == "demo.ready"
     assert not background_jobs.BackgroundJobRunner(background_jobs.JobRegistry()).running
     assert asyncio.iscoroutinefunction(background_jobs.run_due_jobs_once)
+    registry = desktop_task_jobs.register_desktop_task_jobs(background_jobs.JobRegistry())
+    registry = desktop_agent_jobs.register_desktop_agent_jobs(registry)
+    assert registry.has(desktop_task_jobs.DESKTOP_TASK_JOB_TYPE)
+    assert registry.has(desktop_agent_jobs.DESKTOP_AGENT_START_JOB_TYPE)
+    assert registry.has(desktop_agent_jobs.DESKTOP_AGENT_RESUME_JOB_TYPE)
     assert utcnow().tzinfo is not None

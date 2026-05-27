@@ -21,6 +21,8 @@ services:
       - ./commons/backend/forger_desktop.py:/app/src/app/forger_desktop.py
       - ./commons/backend/forger_context.py:/app/src/app/forger_context.py
       - ./commons/backend/desktop_events.py:/app/src/app/desktop_events.py
+      - ./commons/backend/desktop_task_jobs.py:/app/src/app/desktop_task_jobs.py
+      - ./commons/backend/desktop_agent_jobs.py:/app/src/app/desktop_agent_jobs.py
       - ./commons/backend/realtime.py:/app/src/app/realtime.py
 
   frontend:
