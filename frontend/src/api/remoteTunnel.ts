@@ -4,6 +4,7 @@ export const REMOTE_WS_PATH = "/__forger_remote_ws";
 const REMOTE_FLAG = import.meta.env.VITE_FORGER_REMOTE_TUNNEL === "true";
 const REMOTE_SESSION_ID = import.meta.env.VITE_FORGER_REMOTE_SESSION_ID ?? "";
 const REMOTE_HANDSHAKE_URL = import.meta.env.VITE_FORGER_CLOUD_HANDSHAKE_URL ?? "";
+const MOBILE_ACCESS_TOKEN_HASH_KEY = "forgerMobileAccessToken";
 
 export type RemoteHandshake = {
   sessionId: string;
@@ -40,6 +41,7 @@ export type RemoteEnvelope = {
 };
 
 let remoteStatePromise: Promise<RemoteState> | null = null;
+let mobileAccessToken: string | null | undefined;
 
 export class RemoteState {
   constructor(
@@ -97,7 +99,7 @@ async function createRemoteState(): Promise<RemoteState> {
   const handshakeResponse = await fetch(REMOTE_HANDSHAKE_URL, {
     method: "GET",
     credentials: "include",
-    headers: { Accept: "application/json" },
+    headers: remoteAssetHeaders({ Accept: "application/json" }),
   });
   if (!handshakeResponse.ok) {
     throw new Error(`forger_remote_handshake_failed_${handshakeResponse.status}`);
@@ -131,11 +133,40 @@ async function createRemoteState(): Promise<RemoteState> {
     await fetch(handshake.browserPublicKeyUploadUrl, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: remoteAssetHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ sessionId: REMOTE_SESSION_ID, browserPublicKeyJwk, keyId }),
     }).catch(() => undefined);
   }
   return new RemoteState(handshake, key, keyId, browserPublicKeyJwk);
+}
+
+export function remoteMobileAccessToken(): string | undefined {
+  if (mobileAccessToken !== undefined) {
+    return mobileAccessToken || undefined;
+  }
+  mobileAccessToken = readMobileAccessTokenFromHash() ?? null;
+  return mobileAccessToken || undefined;
+}
+
+export function remoteAssetHeaders(headers: Record<string, string> = {}): Record<string, string> {
+  const token = remoteMobileAccessToken();
+  return token ? { ...headers, Authorization: `Bearer ${token}` } : headers;
+}
+
+function readMobileAccessTokenFromHash(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+
+  const rawHash = window.location.hash.replace(/^#/, "");
+  if (!rawHash) return undefined;
+  const params = new URLSearchParams(rawHash);
+  const token = params.get(MOBILE_ACCESS_TOKEN_HASH_KEY)?.trim();
+  if (!token) return undefined;
+
+  params.delete(MOBILE_ACCESS_TOKEN_HASH_KEY);
+  const nextHash = params.toString();
+  const nextUrl = `${window.location.pathname}${window.location.search}${nextHash ? `#${nextHash}` : ""}`;
+  window.history.replaceState(window.history.state, document.title, nextUrl);
+  return token;
 }
 
 export async function encryptRemoteEnvelope(state: RemoteState, payload: unknown): Promise<RemoteEnvelope> {

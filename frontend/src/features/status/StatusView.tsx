@@ -66,16 +66,21 @@ export function StatusView() {
   } satisfies Record<HealthStatus, ReactElement>;
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-background px-6 py-10 text-foreground">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>{t.app.title}</CardTitle>
-          <CardDescription>{t.app.subtitle}</CardDescription>
+    <section className="space-y-6">
+      <div className="max-w-2xl space-y-2">
+        <h1 className="text-3xl font-semibold tracking-normal">
+          {t.status.title}
+        </h1>
+        <p className="text-muted-foreground">{t.status.description}</p>
+      </div>
+
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle className="text-lg">{t.status.cardTitle}</CardTitle>
+          <CardDescription>{t.status.cardDescription}</CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center">
-          {statusBadge[status]}
-        </CardContent>
+        <CardContent>{statusBadge[status]}</CardContent>
       </Card>
-    </main>
+    </section>
   );
 }
