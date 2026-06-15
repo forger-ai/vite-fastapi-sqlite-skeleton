@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./client";
+import { apiWebSocketUrl } from "./client";
 import {
   REMOTE_WS_PATH,
   decryptRemoteEnvelope,
@@ -23,7 +23,15 @@ type RealtimeMessage = {
 
 type RealtimeHandler = (event: RealtimeEvent) => void;
 
-export function createRealtimeClient() {
+export type RealtimeClient = {
+  connect: () => Promise<void>;
+  subscribe: (channel: string) => Promise<void>;
+  unsubscribe: (channel: string) => Promise<void>;
+  onEvent: (handler: RealtimeHandler) => () => void;
+  close: () => void;
+};
+
+export function createRealtimeClient(): RealtimeClient {
   let socket: WebSocket | null = null;
   let remoteStatePromise = isForgerRemoteTunnel() ? getRemoteState() : null;
   const handlers = new Set<RealtimeHandler>();
@@ -33,9 +41,11 @@ export function createRealtimeClient() {
     if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
       return;
     }
-    socket = new WebSocket(await realtimeUrl(remoteStatePromise));
+    const url = await realtimeUrl(remoteStatePromise);
+    socket = new WebSocket(url);
     socket.addEventListener("open", () => {
-      pending.splice(0).forEach((message) => {
+      const queued = pending.splice(0);
+      queued.forEach((message) => {
         void send(message);
       });
     });
@@ -62,7 +72,8 @@ export function createRealtimeClient() {
       return;
     }
     if (isForgerRemoteTunnel()) {
-      socket.send(JSON.stringify(await encryptRemoteEnvelope(await ensureRemoteState(), message)));
+      const state = await ensureRemoteState();
+      socket.send(JSON.stringify(await encryptRemoteEnvelope(state, message)));
       return;
     }
     socket.send(JSON.stringify(message));
@@ -71,7 +82,8 @@ export function createRealtimeClient() {
   async function decodeEvent(data: unknown): Promise<RealtimeEvent> {
     const text = typeof data === "string" ? data : await new Response(data as BodyInit).text();
     if (isForgerRemoteTunnel()) {
-      return decryptRemoteEnvelope<RealtimeEvent>(await ensureRemoteState(), JSON.parse(text) as RemoteEnvelope);
+      const state = await ensureRemoteState();
+      return decryptRemoteEnvelope<RealtimeEvent>(state, JSON.parse(text) as RemoteEnvelope);
     }
     return JSON.parse(text) as RealtimeEvent;
   }
@@ -104,7 +116,7 @@ async function realtimeUrl(remoteStatePromise: Promise<{ handshake: { tunnelUrl:
     const state = await (remoteStatePromise ?? getRemoteState());
     return `${toWebSocketBase(state.handshake.tunnelUrl)}${REMOTE_WS_PATH}`;
   }
-  return `${toWebSocketBase(API_BASE_URL)}/api/realtime/ws`;
+  return apiWebSocketUrl("/api/realtime/ws");
 }
 
 function toWebSocketBase(url: string): string {

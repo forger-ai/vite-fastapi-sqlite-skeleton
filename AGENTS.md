@@ -12,6 +12,8 @@ When `.agents/skills/forger-desktop-runtime-bridge` exists, read it before wirin
 
 `cloudMessaging` in `manifest.json` controls whether Forger Desktop exposes cross-user message helpers to the app. It is an internal platform capability. Do not describe it as a visible app feature unless the app UI and documentation also implement a user-facing messaging workflow.
 
+`platformCapabilities` in `manifest.json` declares Forger-owned runtime capabilities that change Desktop behavior for this app. `platformCapabilities.speechToText` is the current platform capability with runtime effect; declare it only when the app has a real audio transcription or translation workflow. `catalog.capabilities` is catalog copy only and must not grant runtime access.
+
 The agent must always distinguish between:
 
 - visible app capabilities
@@ -177,6 +179,7 @@ Shared stack source:
 - `commons/docker-compose.base.yml`
 
 Rule: if an improvement is reusable by multiple apps in the stack, consider moving it to `vite-fastapi-sqlite-commons`.
+For backend WebSocket URLs, apps must use the commons `apiWebSocketUrl()` helper instead of replacing `URL.pathname` manually, because installed apps receive a prefixed `VITE_API_BASE_URL`.
 
 ### Docker Compose
 

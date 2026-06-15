@@ -48,9 +48,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("skeleton realtime client", () => {
-  it("connects locally and sends subscriptions", async () => {
-    const { createRealtimeClient } = await importRealtime("https://api.test///");
+describe("realtime client", () => {
+  it("connects locally and sends subscribe messages to the stack realtime endpoint", async () => {
+    const { createRealtimeClient } = await importRealtime("https://api.test/__forger_api///");
     const client = createRealtimeClient();
     const connected = client.connect();
     await vi.waitFor(() => expect(FakeWebSocket.instances.length).toBe(1));
@@ -58,19 +58,34 @@ describe("skeleton realtime client", () => {
     await connected;
 
     await client.subscribe("status");
-    await client.unsubscribe("status");
-    const off = client.onEvent(() => undefined);
-    off();
-    client.close();
 
-    expect(FakeWebSocket.instances[0].url).toBe("wss://api.test/api/realtime/ws");
-    expect(FakeWebSocket.instances[0].sent).toEqual([
-      JSON.stringify({ action: "subscribe", channel: "status" }),
-      JSON.stringify({ action: "unsubscribe", channel: "status" }),
-    ]);
+    expect(FakeWebSocket.instances[0].url).toBe("wss://api.test/__forger_api/api/realtime/ws");
+    expect(FakeWebSocket.instances[0].sent).toEqual([JSON.stringify({ action: "subscribe", channel: "status" })]);
   });
 
-  it("uses encrypted remote websocket envelopes", async () => {
+  it("unsubscribes, removes event handlers, and closes the socket", async () => {
+    const { createRealtimeClient } = await importRealtime("http://api.test");
+    const client = createRealtimeClient();
+    const events: unknown[] = [];
+    const removeHandler = client.onEvent((event) => events.push(event));
+    const connected = client.connect();
+    await vi.waitFor(() => expect(FakeWebSocket.instances.length).toBe(1));
+    FakeWebSocket.instances[0].open();
+    await connected;
+
+    await client.unsubscribe("status");
+    removeHandler();
+    FakeWebSocket.instances[0].receive(JSON.stringify({ channel: "status", type: "updated" }));
+    client.close();
+
+    expect(FakeWebSocket.instances[0].sent).toEqual([
+      JSON.stringify({ action: "unsubscribe", channel: "status" }),
+    ]);
+    expect(events).toEqual([]);
+    expect(FakeWebSocket.instances[0].readyState).toBe(FakeWebSocket.CLOSED);
+  });
+
+  it("uses encrypted remote websocket envelopes and decrypts remote events", async () => {
     vi.doMock("./remoteTunnel", () => ({
       REMOTE_WS_PATH: "/__forger_remote_ws",
       isForgerRemoteTunnel: () => true,
@@ -78,15 +93,15 @@ describe("skeleton realtime client", () => {
       encryptRemoteEnvelope: vi.fn(async (_state: unknown, payload: unknown) => ({ ciphertext: JSON.stringify(payload) })),
       decryptRemoteEnvelope: vi.fn(async (_state: unknown, envelope: { event: unknown }) => envelope.event),
     }));
-    const { createRealtimeClient } = await importRealtime();
+    const { createRealtimeClient } = await importRealtime("http://api.test");
     const client = createRealtimeClient();
     const events: unknown[] = [];
     client.onEvent((event) => events.push(event));
+
     const connected = client.connect();
     await vi.waitFor(() => expect(FakeWebSocket.instances.length).toBe(1));
     FakeWebSocket.instances[0].open();
     await connected;
-
     await client.subscribe("status");
     FakeWebSocket.instances[0].receive(JSON.stringify({ event: { channel: "status", type: "updated" } }));
     await vi.waitFor(() => expect(events.length).toBe(1));

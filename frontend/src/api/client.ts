@@ -22,8 +22,6 @@ export class ApiError extends Error {
   }
 }
 
-// ── Request helper ────────────────────────────────────────────────────────────
-
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   body?: unknown;
@@ -74,9 +72,7 @@ export async function request<T>(
     throw new ApiError(0, "Network error", error);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
+  if (response.status === 204) return undefined as T;
 
   const contentType = response.headers.get("Content-Type") ?? "";
   const payload: unknown = contentType.includes("application/json")
@@ -90,22 +86,31 @@ export async function request<T>(
   return payload as T;
 }
 
-// ── Shortcuts ─────────────────────────────────────────────────────────────────
+export const get  = <T>(path: string, signal?: AbortSignal) => request<T>(path, { signal });
+export const post = <T>(path: string, body: unknown, signal?: AbortSignal) => request<T>(path, { method: "POST", body, signal });
+export const patch = <T>(path: string, body: unknown, signal?: AbortSignal) => request<T>(path, { method: "PATCH", body, signal });
+export const put  = <T>(path: string, body: unknown, signal?: AbortSignal) => request<T>(path, { method: "PUT", body, signal });
+export const del  = <T>(path: string, signal?: AbortSignal) => request<T>(path, { method: "DELETE", signal });
 
-export const get = <T>(path: string, signal?: AbortSignal) =>
-  request<T>(path, { signal });
+export type WebSocketQueryValue = string | number | boolean | null | undefined;
 
-export const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
-  request<T>(path, { method: "POST", body, signal });
-
-export const patch = <T>(path: string, body: unknown, signal?: AbortSignal) =>
-  request<T>(path, { method: "PATCH", body, signal });
-
-export const put = <T>(path: string, body: unknown, signal?: AbortSignal) =>
-  request<T>(path, { method: "PUT", body, signal });
-
-export const del = <T>(path: string, signal?: AbortSignal) =>
-  request<T>(path, { method: "DELETE", signal });
+export function apiWebSocketUrl(
+  path: string,
+  params: Record<string, WebSocketQueryValue> = {},
+): string {
+  const base = new URL(API_BASE_URL);
+  base.protocol = base.protocol === "https:" ? "wss:" : "ws:";
+  const basePath = base.pathname === "/" ? "" : base.pathname.replace(/\/+$/, "");
+  const targetPath = path.startsWith("/") ? path : `/${path}`;
+  base.pathname = `${basePath}${targetPath}`;
+  base.search = "";
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      base.searchParams.set(key, String(value));
+    }
+  }
+  return base.toString();
+}
 
 type SerializedRemoteBody = {
   bodyBase64: string | null;
