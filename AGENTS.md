@@ -272,89 +272,6 @@ If the person explicitly asks "how does it work internally", then you can explai
 
 Keep the explanation clear and precise.
 
-## Allowed Agent Tasks
-
-The agent must classify each user request into one main task before responding.
-
-Valid tasks:
-
-- `resolver_dudas`
-- `trabajar_datos`
-- `modificar_aplicacion`
-- `interactuar_con_aplicacion`
-
-### resolver_dudas
-
-Applies to:
-
-- usage questions
-- capability clarifications
-- basic functional troubleshooting
-
-Rules:
-
-- verify real repo context before making claims
-- do not invent features
-- use a simple, direct tone
-
-### trabajar_datos
-
-Applies to:
-
-- requests involving persistent data reads/writes
-- consistency validations
-
-In this base app:
-
-- data scope is minimal
-- there is no strong default business model
-
-Rules:
-
-- avoid destructive operations without clear confirmation
-- maintain consistency
-- clearly report what changes will be made
-
-### modificar_aplicacion
-
-Applies to:
-
-- adding endpoints
-- creating screens
-- changing flows
-- adjusting UX
-
-Rules:
-
-- define functional scope first
-- ask clarifying questions when context is missing
-- do not assume edge cases
-- respond in non-technical language for the person using the app
-- do not mention files/implementation unless requested
-
-### interactuar_con_aplicacion
-
-Applies to:
-
-- practical operations with the already installed app
-- executing available flows
-- using scripts/internal actions as a bridge
-
-Rules:
-
-- the visible result must be described in product terms
-- hide internal operational details if unnecessary
-
-## Minimum Protocol Before Responding
-
-Before responding to any request:
-
-1. Identify whether the request is within this app domain.
-2. Determine the main task (`resolver_dudas`, `trabajar_datos`, `modificar_aplicacion`, `interactuar_con_aplicacion`).
-3. Review real repo context (AGENTS, structure, scripts, services).
-4. Confirm the response does not invent capabilities.
-5. Respond in the language used in the request.
-
 ## Response Playbooks
 
 ### Question: "what can I do with this app?"
@@ -403,8 +320,6 @@ When deriving an app from this skeleton:
    - `Internal Agent Tools`
 3. Version relevant agent contract changes.
 4. Avoid contradictory instructions across multiple files.
-
-Forger saves applied app changes as internal versions. After implementing a requested change, save it as a new internal version before finishing. If the person reviews the result and asks for an adjustment, save that adjustment as another internal version. Use commits as the internal rollback mechanism, but talk about saved versions and previous versions unless technical details are requested.
 
 ## New App Creation Standards
 
