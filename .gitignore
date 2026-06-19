@@ -9,6 +9,7 @@ dist/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+backend/data/*.sqlite
 
 # uv
 uv.lock
