@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 from collections.abc import Iterator
 
@@ -100,6 +101,96 @@ def test_forger_context_normalizes_desktop_payloads(
         "rawLocale": None,
         "source": "fallback",
     }
+
+
+def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app import forger_desktop
+
+    calls: list[tuple[str, str, dict | None]] = []
+
+    def fake_request(method: str, path: str, body: dict | None):
+        calls.append((method, path, body))
+        return {"desktop_thread_id": "thread_1", "desktop_run_id": "run_1", "runId": "task_1"}
+
+    monkeypatch.setattr(forger_desktop, "_request", fake_request)
+    workspace = {
+        "cwdGrantId": "workspace_1",
+        "additionalFolderGrantIds": ["workspace_2"],
+    }
+
+    forger_desktop.start_agent_task(
+        template_id="review",
+        workspace_path="/tmp/app",
+        workspace=workspace,
+    )
+    forger_desktop.start_manifest_agent_thread(
+        agent_id="advisor",
+        workspace_path="/tmp/app",
+        workspace=workspace,
+    )
+    forger_desktop.resume_manifest_agent_thread(
+        desktop_thread_id="thread_1",
+        workspace_path="/tmp/app",
+        workspace=workspace,
+    )
+    forger_desktop.steer_manifest_agent_run(
+        desktop_thread_id="thread_1",
+        desktop_run_id="run_1",
+        workspace_path="/tmp/app",
+        workspace=workspace,
+    )
+    forger_desktop.request_folder_grant(grant_token="grant-token")
+    forger_desktop.list_folder_grants()
+    forger_desktop.revoke_folder_grant("grant/id")
+
+    assert calls[0] == (
+        "POST",
+        "/agent-tasks",
+        {
+            "templateId": "review",
+            "locale": None,
+            "arguments": None,
+            "variables": None,
+            "attachments": None,
+            "workspacePath": "/tmp/app",
+            "workspace": workspace,
+        },
+    )
+    assert calls[1][2]["workspace"] == workspace
+    assert calls[2][2]["workspace"] == workspace
+    assert calls[3][2]["workspace"] == workspace
+    assert calls[4] == ("POST", "/folder-grants/request", {"grantToken": "grant-token"})
+    assert calls[5] == ("GET", "/folder-grants", None)
+    assert calls[6] == ("DELETE", "/folder-grants/grant%2Fid", None)
+
+
+def test_forger_desktop_folder_grant_token_matches_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app import forger_desktop
+
+    monkeypatch.setenv("FORGER_DESKTOP_RUNTIME_APP_ID", "app.test")
+    monkeypatch.setenv("FORGER_APP_GRANT_SECRET", "grant.secret")
+    monkeypatch.setattr(forger_desktop.time, "time", lambda: 1_700_000_000)
+
+    token = forger_desktop.create_folder_grant_token(
+        path=" /Users/me/Project ",
+        expires_in_seconds=60,
+    )
+    payload, _signature = token.split(".")
+    raw_payload = payload + "=" * (-len(payload) % 4)
+    decoded_payload = json.loads(forger_desktop.base64.urlsafe_b64decode(raw_payload))
+
+    assert decoded_payload == {
+        "appId": "app.test",
+        "path": "/Users/me/Project",
+        "exp": 1_700_000_060,
+    }
+    with pytest.raises(forger_desktop.ForgerAppGrantUnavailable):
+        monkeypatch.delenv("FORGER_APP_GRANT_SECRET")
+        forger_desktop.create_folder_grant_token(path="/Users/me/Project")
 
 
 def test_app_database_extension_initializes_declared_models(skeleton_app: object) -> None:

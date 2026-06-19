@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import json
@@ -9,7 +10,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 TERMINAL_RUN_STATUSES = {"completed", "failed", "canceled"}
@@ -21,6 +22,10 @@ class ForgerDesktopRuntimeError(RuntimeError):
 
 
 class ForgerDesktopRuntimeUnavailable(ForgerDesktopRuntimeError):
+    pass
+
+
+class ForgerAppGrantUnavailable(ForgerDesktopRuntimeUnavailable):
     pass
 
 
@@ -43,6 +48,76 @@ def get_app_context() -> dict[str, Any]:
     return _request("GET", "/context", None)
 
 
+def create_folder_grant_token(
+    *,
+    path: str,
+    expires_in_seconds: int = 300,
+) -> str:
+    app_id = (os.environ.get("FORGER_DESKTOP_RUNTIME_APP_ID") or "").strip()
+    secret = (os.environ.get("FORGER_APP_GRANT_SECRET") or "").strip()
+    folder_path = path.strip()
+    if not app_id or not secret:
+        raise ForgerAppGrantUnavailable(
+            "Forger app folder grant signing is not available",
+        )
+    if not folder_path:
+        raise ValueError("folder grant path is required")
+
+    payload = _base64url_json(
+        {
+            "appId": app_id,
+            "path": folder_path,
+            "exp": int(time.time()) + max(1, int(expires_in_seconds)),
+        },
+    )
+    signature = _base64url_bytes(
+        hmac.new(
+            secret.encode("utf-8"),
+            payload.encode("utf-8"),
+            hashlib.sha256,
+        ).digest(),
+    )
+    return f"{payload}.{signature}"
+
+
+def request_folder_grant_for_path(
+    *,
+    path: str,
+    expires_in_seconds: int = 300,
+) -> dict[str, Any]:
+    return request_folder_grant(
+        grant_token=create_folder_grant_token(
+            path=path,
+            expires_in_seconds=expires_in_seconds,
+        ),
+    )
+
+
+def request_folder_grant(
+    *,
+    grant_token: str,
+) -> dict[str, Any]:
+    return _request(
+        "POST",
+        "/folder-grants/request",
+        {
+            "grantToken": grant_token,
+        },
+    )
+
+
+def list_folder_grants() -> dict[str, Any]:
+    return _request("GET", "/folder-grants", None)
+
+
+def revoke_folder_grant(grant_id: str) -> dict[str, Any] | None:
+    return _request(
+        "DELETE",
+        f"/folder-grants/{quote(grant_id, safe='')}",
+        None,
+    )
+
+
 def start_agent_task(
     *,
     template_id: str,
@@ -50,6 +125,8 @@ def start_agent_task(
     arguments: dict[str, Any] | None = None,
     variables: dict[str, Any] | None = None,
     attachments: list[dict[str, Any]] | None = None,
+    workspace_path: str | None = None,
+    workspace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return _request(
         "POST",
@@ -60,6 +137,8 @@ def start_agent_task(
             "arguments": arguments or None,
             "variables": variables or None,
             "attachments": attachments or None,
+            "workspacePath": workspace_path or None,
+            "workspace": workspace or None,
         },
     )
 
@@ -98,6 +177,7 @@ def start_manifest_agent_thread(
     runtime: dict[str, Any] | None = None,
     metadata: dict[str, Any] | None = None,
     workspace_path: str | None = None,
+    workspace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return _request(
         "POST",
@@ -108,6 +188,7 @@ def start_manifest_agent_thread(
             "runtime": runtime or None,
             "metadata": metadata or None,
             "workspacePath": workspace_path or None,
+            "workspace": workspace or None,
         },
     )
 
@@ -118,6 +199,7 @@ def resume_manifest_agent_thread(
     variables: dict[str, Any] | None = None,
     runtime: dict[str, Any] | None = None,
     workspace_path: str | None = None,
+    workspace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return _request(
         "POST",
@@ -126,6 +208,7 @@ def resume_manifest_agent_thread(
             "variables": variables or None,
             "runtime": runtime or None,
             "workspacePath": workspace_path or None,
+            "workspace": workspace or None,
         },
     )
 
@@ -137,6 +220,7 @@ def steer_manifest_agent_run(
     variables: dict[str, Any] | None = None,
     runtime: dict[str, Any] | None = None,
     workspace_path: str | None = None,
+    workspace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return _request(
         "POST",
@@ -145,6 +229,7 @@ def steer_manifest_agent_run(
             "variables": variables or None,
             "runtime": runtime or None,
             "workspacePath": workspace_path or None,
+            "workspace": workspace or None,
         },
     )
 
@@ -157,6 +242,7 @@ def create_agent_thread(
     runtime: dict[str, Any] | None = None,
     metadata: dict[str, Any] | None = None,
     workspace_path: str | None = None,
+    workspace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     thread = start_manifest_agent_thread(
         agent_id=manifest_agent_id,
@@ -165,6 +251,7 @@ def create_agent_thread(
         runtime=runtime,
         metadata=metadata,
         workspace_path=workspace_path,
+        workspace=workspace,
     )
     return _with_legacy_thread_aliases(thread)
 
@@ -176,6 +263,7 @@ def start_agent_run(
     context: str | None = None,
     runtime: dict[str, Any] | None = None,
     workspace_path: str | None = None,
+    workspace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     run = resume_manifest_agent_thread(
         desktop_thread_id=desktop_thread_id,
@@ -186,6 +274,7 @@ def start_agent_run(
         },
         runtime=runtime,
         workspace_path=workspace_path,
+        workspace=workspace,
     )
     return _with_legacy_run_aliases(run)
 
@@ -305,6 +394,16 @@ def normalize_runtime_url(raw_url: str) -> str:
 
 def _strip_none(value: dict[str, Any]) -> dict[str, Any]:
     return {key: item for key, item in value.items() if item is not None}
+
+
+def _base64url_json(value: dict[str, Any]) -> str:
+    return _base64url_bytes(
+        json.dumps(value, separators=(",", ":")).encode("utf-8"),
+    )
+
+
+def _base64url_bytes(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).decode("ascii").rstrip("=")
 
 
 def _with_legacy_thread_aliases(thread: dict[str, Any]) -> dict[str, Any]:
