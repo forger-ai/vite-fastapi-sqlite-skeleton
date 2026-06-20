@@ -49,7 +49,7 @@
       "command": "uv run fastapi dev src/app/main.py --host 0.0.0.0 --port 8000",
       "healthcheck": "/api/health",
       "environment": {
-        "DATABASE_URL": "sqlite:///{app_data}/app.sqlite",
+        "DATABASE_URL": "sqlite:///{app_data}/forger-app.sqlite",
         "CORS_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173"
       },
       "volumes": [
@@ -84,7 +84,7 @@
     "command": "python -m app.mcp_server",
     "healthcheck": "/health",
     "environment": {
-      "DATABASE_URL": "sqlite:///{app_data}/app.sqlite",
+      "DATABASE_URL": "sqlite:///{app_data}/forger-app.sqlite",
       "PYTHONPATH": "./src"
     },
     "toolTimeoutSec": 600

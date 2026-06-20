@@ -16,7 +16,7 @@ pytestmark = pytest.mark.bdd
 @pytest.fixture(scope="module")
 def skeleton_app(tmp_path_factory: pytest.TempPathFactory) -> Iterator[object]:
     monkeypatch = pytest.MonkeyPatch()
-    db_path = tmp_path_factory.mktemp("data") / "app.sqlite"
+    db_path = tmp_path_factory.mktemp("data") / "forger-app.sqlite"
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_path}")
     monkeypatch.setenv("CORS_ORIGINS", "http://localhost:5173,http://example.test")
     SQLModel.metadata.clear()

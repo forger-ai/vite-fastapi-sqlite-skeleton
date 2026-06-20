@@ -4,15 +4,11 @@
 
 This file is the main functional and operational context source for this app.
 
-If `manifest.json` exists, use it for installation, service, and script metadata. Do not use it as the list of visible app capabilities.
+If `manifest.json` exists, treat it as runtime metadata. Do not use it as the list of visible app capabilities.
 
-When `.agents/skills/forger-manifest-authoring` exists, read it before creating or editing `manifest.json`.
+When a manifest-authoring skill exists under `.agents/skills/`, read it before creating or editing `manifest.json`.
 
-When `.agents/skills/forger-desktop-runtime-bridge` exists, read it before wiring app backend routes that start, poll, cancel, or resume manifest promptTemplate tasks or manifest agent threads through Forger Desktop.
-
-`cloudMessaging` in `manifest.json` controls whether Forger Desktop exposes cross-user message helpers to the app. It is an internal platform capability. Do not describe it as a visible app feature unless the app UI and documentation also implement a user-facing messaging workflow.
-
-`platformCapabilities` in `manifest.json` declares Forger-owned runtime capabilities that change Desktop behavior for this app. `platformCapabilities.speechToText` enables Desktop-managed speech workflows for apps with real audio transcription or translation features. `platformCapabilities.workspaceFolders` lets an app ask Forger for user-approved external folder grants, but it does not grant folder access by itself. Declare platform capabilities only when the app has a real visible workflow that needs them. `catalog.capabilities` is catalog copy only and must not grant runtime access.
+When a runtime-bridge skill exists under `.agents/skills/`, read it before wiring backend routes that communicate with platform runtime bridge features.
 
 The agent must always distinguish between:
 
@@ -20,22 +16,6 @@ The agent must always distinguish between:
 - internal agent tools
 
 Key rule: internal tools can be used to execute tasks, but they must not be presented as the app interface or as steps the person must run manually.
-
-## Manifest Declaration Roles
-
-The manifest can declare several agent-facing surfaces. They have different roles and must not be treated as interchangeable.
-
-- `promptTemplates` are atomic, form-backed task prompts. Use them for one clearly bounded job with declared inputs, deterministic completion criteria, and no expectation of ongoing chat state.
-- `promptTemplates` must use `title`, `description`, `arguments`, and `prompt`. Do not use `name` or `inputs` for prompt templates.
-- Prompt template example: `"promptTemplates": [{ "id": "load-records", "title": "Load records", "description": "Read a shared file and load confirmed records.", "arguments": [{ "name": "file", "type": "file", "required": true, "acceptedFileTypes": [".csv", ".xlsx"] }], "prompt": "Read {{file}}, validate the rows, and load the confirmed records." }]`.
-- `agents` are resumable app coworkers or orchestrators. Use them for ongoing conversations, multi-turn planning, steering, review, or work that needs a thread to continue later. Manifest agents can declare provider-aware `runtimeRecommendations` for `codex` and `claude`; for new manifests, prefer those recommendations over a rigid fixed runtime unless the app truly requires a specific provider or model.
-- `agents` must use `title` plus either `initialPrompt` or `prompts.initial.body`. Do not use `name` or `prompt` for manifest agents.
-- Preferred agent example: `"agents": [{ "id": "advisor", "title": "Advisor", "description": "A resumable coworker that helps you review decisions.", "kind": "thread_interface", "prompts": { "initial": { "body": "You are {{advisor_name}}. Help with this goal: {{goal}}.", "variables": { "advisor_name": { "type": "text", "required": true }, "goal": { "type": "text", "required": true } } }, "resume": { "body": "Continue helping with the current goal. New context: {{context}}.", "variables": { "context": { "type": "text", "required": false } } }, "steer": { "body": "Adjust the current work with this instruction: {{instruction}}.", "variables": { "instruction": { "type": "text", "required": true } } } } }]`.
-- `tools` declares official Forger tools the app is allowed to access through Forger. Today the only official tool is Gmail. Do not use `tools` for app-owned data actions, scripts, MCP servers, or visible features.
-- `tools.required` and `tools.optional` must contain objects, not strings. Each object must include `toolId`, `reason`, and `actions`.
-- Gmail manifest declaration example: `"tools": { "required": [], "optional": [{ "toolId": "gmail", "reason": "Lets this app help you search, read, download attachments from, or draft/send email when you explicitly ask.", "actions": ["gmail.connection.status", "gmail.search_messages", "gmail.read_thread", "gmail.read_attachment", "gmail.send_email"] }] }`.
-- `appSecrets` are declarations that name credentials an app may need. They must never contain secret values, and secret values must never be copied into prompts, memory, logs, generated files, or final messages.
-- `scripts` are internal fallback automation for tasks not covered by app MCP tools, backend APIs, or another structured app-owned interface. Prefer app-owned structured interfaces before scripts when they exist.
 
 ## Product Identity
 
@@ -46,7 +26,7 @@ The manifest can declare several agent-facing surfaces. They have different role
 
 ## Functional Goal
 
-Skeleton exists to accelerate creation of new Forger apps with a consistent baseline:
+Skeleton exists to accelerate creation of local apps with a consistent baseline:
 
 - working FastAPI backend
 - working Vite + React frontend
@@ -59,7 +39,7 @@ It is not a final business app. It is a starting point.
 
 ### Primary Person
 
-- the person turning this skeleton into their own local Forger app
+- the person turning this skeleton into their own local app
 - the person who wants to quickly validate that their local app runtime works
 
 ### Demo Use
@@ -240,14 +220,6 @@ Use:
 - exclude Git metadata at every level, including submodules
 - do not ask the person to run internal paths unless they ask for technical mode
 
-### Changelog
-
-`manifest.json` keeps one `changelog` entry for each published version.
-
-The changelog describes visible and operational changes the desktop can show when it detects an update.
-
-Do not use the changelog to invent capabilities: it only summarizes real differences in that version.
-
 ## Communication Rule
 
 ### General Principle
@@ -329,9 +301,9 @@ When turning this skeleton into a concrete app, define the first real personal f
 - Where the app or stack enforces coverage thresholds, treat 100% coverage as the target for affected backend/frontend surfaces. If complete coverage is not practical, record the specific gap and why it remains.
 - Build frontend changes as a browser-safe Vite React app using Tailwind CSS for styling, shadcn/ui copied components, and Radix primitives when accessible headless behavior is needed. Keep screens mobile-consistent and do not add Electron, Node, preload, `ipcRenderer`, `contextBridge`, or `window.forgerApp` dependencies to frontend code.
 - Keep React frontend code in the feature-first structure: `frontend/src/app` for root wiring, `frontend/src/features/<area>` for domain screens and feature-local components/hooks, `frontend/src/components` for cross-feature reusable UI and shadcn-style primitives, `frontend/src/api` for backend contracts, `frontend/src/lib` for pure helpers, `frontend/src/i18n` for copy, and `frontend/src/styles` or `frontend/src/design-system` for Tailwind tokens and shared design setup. Keep `App.tsx` thin.
-- Keep persistence, validation, import/export rules, secret usage, MCP tools, app scripts, and privileged Forger integration in the backend. The frontend sends intent and renders state; it does not own the only copy of business rules.
+- Keep persistence, validation, import/export rules, secret usage, app tools, scripts, and privileged platform integration in the backend. The frontend sends intent and renders state; it does not own the only copy of business rules.
 - Model SQLite data with explicit SQLModel tables, typed columns, constraints, relationships, and migrations. Do not add JSON columns unless the data is genuinely schemaless and the reason is documented in the app contract or migration notes.
-- Keep secrets out of prompts, memory, logs, screenshots, generated files, test fixtures, and final messages. Manifest `appSecrets` entries declare requirements only; they never store values.
+- Keep secrets out of prompts, memory, logs, screenshots, generated files, test fixtures, and final messages.
 - Keep reusable stack infrastructure in `commons`. Keep app business rules, app copy, screens, seeds, prompts, product-specific scripts, and domain tests in the app repo.
 
 ## Tone
