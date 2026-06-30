@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ListChecks, Server } from "lucide-react";
+import { ArrowRight, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,18 +15,11 @@ export function DashboardView() {
 
   const destinations = [
     {
-      title: t.dashboard.examplesTitle,
-      description: t.dashboard.examplesDescription,
-      href: "/examples",
+      title: t.dashboard.exampleTitle,
+      description: t.dashboard.exampleDescription,
+      href: "/example",
       icon: ListChecks,
-      action: t.dashboard.openExamples,
-    },
-    {
-      title: t.dashboard.statusTitle,
-      description: t.dashboard.statusDescription,
-      href: "/status",
-      icon: Server,
-      action: t.dashboard.openStatus,
+      action: t.dashboard.openExample,
     },
   ];
 
@@ -39,7 +32,7 @@ export function DashboardView() {
         <p className="text-muted-foreground">{t.dashboard.description}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,28rem)]">
         {destinations.map((destination) => {
           const Icon = destination.icon;
           return (

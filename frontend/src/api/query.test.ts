@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ReactElement } from "react";
 import { ForgerQueryProvider, createForgerQueryClient, forgerQueryKeys } from "./query";
 
 describe("skeleton query helpers", () => {
@@ -11,8 +12,16 @@ describe("skeleton query helpers", () => {
       refetchOnWindowFocus: false,
     });
     expect(client.getDefaultOptions().mutations).toMatchObject({ retry: 0 });
-    expect(forgerQueryKeys.resource("status", "health")).toEqual(["forger", "status", "health"]);
-    expect(ForgerQueryProvider({ children: "ok", client }).props.client).toBe(client);
-    expect(ForgerQueryProvider({ children: "ok" }).props.client).toBeDefined();
+    expect(forgerQueryKeys.resource("example", "items")).toEqual(["forger", "example", "items"]);
+    const providedClient = ForgerQueryProvider({
+      children: "ok",
+      client,
+    }) as ReactElement<{ client: unknown }>;
+    const defaultClient = ForgerQueryProvider({
+      children: "ok",
+    }) as ReactElement<{ client: unknown }>;
+
+    expect(providedClient.props.client).toBe(client);
+    expect(defaultClient.props.client).toBeDefined();
   });
 });

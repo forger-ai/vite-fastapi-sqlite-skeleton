@@ -3,30 +3,26 @@ import {
   appNavigationItems,
   appRoutePaths,
   dashboardRoute,
-  examplesRoute,
+  exampleRoute,
   routeTree,
-  statusRoute,
 } from "./routes";
 
 describe("skeleton app shell routes", () => {
-  it("keeps a multi-view navigation contract for new apps", () => {
+  it("defines the starter navigation items", () => {
     expect(appNavigationItems.map((item) => item.id)).toEqual([
       "dashboard",
-      "examples",
-      "status",
+      "example",
     ]);
     expect(appNavigationItems.map((item) => item.path)).toEqual([
       appRoutePaths.dashboard,
-      appRoutePaths.examples,
-      appRoutePaths.status,
+      appRoutePaths.example,
     ]);
   });
 
-  it("keeps dashboard, feature list, status, and fallback routes explicit", () => {
+  it("defines the starter route paths", () => {
     expect(appRoutePaths).toEqual({
       dashboard: "/",
-      examples: "/examples",
-      status: "/status",
+      example: "/example",
       fallback: "*",
     });
   });
@@ -34,8 +30,7 @@ describe("skeleton app shell routes", () => {
   it("builds the shell around TanStack Router child routes", () => {
     expect(routeTree.children).toEqual([
       dashboardRoute,
-      examplesRoute,
-      statusRoute,
+      exampleRoute,
     ]);
   });
 });

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import importlib
 import json
+import socket
 import sys
+import threading
 from collections.abc import Iterator
+from urllib.request import urlopen
 
 import pytest
 from fastapi.testclient import TestClient
@@ -38,6 +41,38 @@ def test_health_endpoint_validates_backend_and_database(skeleton_app: object) ->
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "database": "sqlite"}
+
+
+def test_mcp_health_endpoint_reports_server_ready() -> None:
+    from app.mcp_runtime import ToolRegistry, run_mcp_server
+
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+
+    thread = threading.Thread(
+        target=run_mcp_server,
+        kwargs={
+            "registry": ToolRegistry(),
+            "server_name": "test-mcp",
+            "host": "127.0.0.1",
+            "port": port,
+        },
+        daemon=True,
+    )
+    thread.start()
+
+    response_payload: dict[str, str] | None = None
+    for _attempt in range(40):
+        try:
+            with urlopen(f"http://127.0.0.1:{port}/health", timeout=0.25) as response:
+                assert response.status == 200
+                response_payload = json.loads(response.read().decode("utf-8"))
+                break
+        except OSError:
+            continue
+
+    assert response_payload == {"status": "ok", "server": "test-mcp"}
 
 
 def test_cors_origin_is_configured_from_environment(skeleton_app: object) -> None:
@@ -154,6 +189,7 @@ def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
             "arguments": None,
             "variables": None,
             "attachments": None,
+            "runtime": None,
             "workspacePath": "/tmp/app",
             "workspace": workspace,
         },

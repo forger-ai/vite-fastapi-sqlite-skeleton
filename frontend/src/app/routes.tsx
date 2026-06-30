@@ -1,29 +1,26 @@
 import { createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
-import { Activity, Home, ListChecks, type LucideIcon } from "lucide-react";
+import { Home, ListChecks, type LucideIcon } from "lucide-react";
 import { AppShell } from "./AppShell";
 import { DashboardView } from "@/features/dashboard/DashboardView";
-import { ExamplesView } from "@/features/examples/ExamplesView";
+import { ExampleView } from "@/features/example/ExampleView";
 import { NotFoundView } from "@/features/not-found/NotFoundView";
-import { StatusView } from "@/features/status/StatusView";
 
-export type AppRouteId = "dashboard" | "examples" | "status";
+export type AppRouteId = "dashboard" | "example";
 
 export type AppNavigationItem = {
   id: AppRouteId;
-  path: "/" | "/examples" | "/status";
+  path: "/" | "/example";
   icon: LucideIcon;
 };
 
 export const appNavigationItems: AppNavigationItem[] = [
   { id: "dashboard", path: "/", icon: Home },
-  { id: "examples", path: "/examples", icon: ListChecks },
-  { id: "status", path: "/status", icon: Activity },
+  { id: "example", path: "/example", icon: ListChecks },
 ];
 
 export const appRoutePaths = {
   dashboard: "/",
-  examples: "/examples",
-  status: "/status",
+  example: "/example",
   fallback: "*",
 } as const;
 
@@ -37,22 +34,15 @@ export const dashboardRoute = createRoute({
   component: DashboardView,
 });
 
-export const examplesRoute = createRoute({
+export const exampleRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: appRoutePaths.examples,
-  component: ExamplesView,
-});
-
-export const statusRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: appRoutePaths.status,
-  component: StatusView,
+  path: appRoutePaths.example,
+  component: ExampleView,
 });
 
 export const routeTree = rootRoute.addChildren([
   dashboardRoute,
-  examplesRoute,
-  statusRoute,
+  exampleRoute,
 ]);
 
 export const appRouter = createRouter({
