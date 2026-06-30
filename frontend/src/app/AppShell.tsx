@@ -46,7 +46,7 @@ export function AppShell() {
         </main>
         <nav
           aria-label={t.navigation.label}
-          className="grid grid-cols-3 border-t border-border bg-card md:hidden"
+          className="grid grid-cols-2 border-t border-border bg-card md:hidden"
         >
           {appNavigationItems.map((item) => {
             const Icon = item.icon;

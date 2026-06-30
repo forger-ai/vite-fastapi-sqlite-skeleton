@@ -9,27 +9,22 @@ export const en: Dictionary = {
     label: "Primary navigation",
     items: {
       dashboard: "Dashboard",
-      examples: "Examples",
-      status: "Status",
+      example: "Example",
     },
   },
   dashboard: {
     title: "App starting point",
     description:
-      "Use this dashboard as a summary and routing surface. Move real work into dedicated feature views.",
-    examplesTitle: "Feature list",
-    examplesDescription:
-      "A replaceable list view pattern for the first business area in the app.",
-    statusTitle: "Runtime status",
-    statusDescription:
-      "Check that the frontend can still reach the FastAPI backend.",
-    openExamples: "Open list",
-    openStatus: "Check status",
+      "Use this dashboard as a minimal shell while you design the app's real first screen.",
+    exampleTitle: "Replaceable example",
+    exampleDescription:
+      "A scaffold-only view to delete when the real app frontend is implemented.",
+    openExample: "Open example",
   },
   examples: {
     title: "Example feature",
     description:
-      "Replace this placeholder with the app's first real list, details, and create or edit flow.",
+      "This placeholder is only here to show the route and layout shape. Remove it when building the real app.",
     create: "Create item",
     itemColumn: "Item",
     statusColumn: "Status",
@@ -39,16 +34,6 @@ export const en: Dictionary = {
       review: "Review item",
       done: "Completed item",
     },
-  },
-  status: {
-    title: "Runtime status",
-    description:
-      "This view verifies that the frontend and backend can communicate.",
-    cardTitle: "Backend connection",
-    cardDescription: "The status updates when realtime events arrive.",
-    loading: "Connecting...",
-    ok: "API connected",
-    error: "API unavailable",
   },
   notFound: {
     title: "View not found",

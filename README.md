@@ -74,7 +74,11 @@ Services:
 
 - Backend: `http://localhost:8000`
 - Frontend: `http://localhost:5173`
-- Health: `GET http://localhost:8000/api/health`
+- Runtime health endpoint: `GET http://localhost:8000/api/health`
+
+The health endpoint is for runtime and service checks. It is not a product
+screen; derived apps should replace the starter dashboard and `/example` view
+with their real frontend.
 
 ## Local Development without Docker (fallback)
 
@@ -108,10 +112,11 @@ When creating an app from this skeleton:
 
 1. Keep `commons/` as a submodule.
 2. Preserve the `docker-compose.yml` mount pattern.
-3. Avoid copying and forking shared files unless strictly necessary.
-4. If you add reusable utilities for multiple apps, move them to `vite-fastapi-sqlite-commons`.
-5. Keep `manifest.json` with one `changelog` entry for each published version.
-6. Verify that the distributable ZIP does not include `.git` at any level.
+3. Replace the starter dashboard and `/example` route with the app's real frontend.
+4. Avoid copying and forking shared files unless strictly necessary.
+5. If you add reusable utilities for multiple apps, move them to `vite-fastapi-sqlite-commons`.
+6. Keep `manifest.json` with one `changelog` entry for each published version.
+7. Verify that the distributable ZIP does not include `.git` at any level.
 
 ## Cloud Messaging Contract
 

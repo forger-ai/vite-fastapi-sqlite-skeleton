@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n";
 
+// Remove this view when implementing the real app frontend. It is scaffold-only.
 type ExampleRowId = "draft" | "review" | "done";
 
 const exampleRows: Array<{ id: ExampleRowId; status: string }> = [
@@ -11,7 +12,7 @@ const exampleRows: Array<{ id: ExampleRowId; status: string }> = [
   { id: "done", status: "Replace me" },
 ];
 
-export function ExamplesView() {
+export function ExampleView() {
   const t = useI18n();
 
   return (

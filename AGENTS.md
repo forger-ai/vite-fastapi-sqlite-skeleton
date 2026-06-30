@@ -30,7 +30,7 @@ Skeleton exists to accelerate creation of local apps with a consistent baseline:
 
 - working FastAPI backend
 - working Vite + React frontend
-- functional frontend-backend connection
+- backend runtime health contract for Desktop and service checks
 - shared stack contract through the `commons/` submodule
 
 It is not a final business app. It is a starting point.
@@ -52,7 +52,7 @@ It is not a final business app. It is a starting point.
 
 - starts frontend and backend locally
 - responds to `GET /api/health` from the backend
-- shows API connectivity status in the frontend
+- shows a minimal frontend shell with a removable `/example` route
 - uses TanStack Query for frontend server state
 - can refresh server state from the stack realtime channel
 - provides a base structure for expanding features
@@ -72,33 +72,21 @@ The agent must not invent capabilities outside this scope.
 
 These are the actions you can present as real to the person using the app.
 
-### 1. Verify General App Status
+### 1. Review The Starting Frontend Shell
 
 Examples:
 
-- "is the app running?"
-- "does the backend respond?"
-- "why does the screen say API unavailable?"
+- "what is on the starter screen?"
+- "what should I replace first?"
 
 Expected response:
 
-- confirm visible status
+- explain that the dashboard and `/example` route are scaffold-only
+- say the real app frontend should replace them
 - guide in simple functional terms
 - avoid unnecessary internals unless requested
 
-### 2. Confirm Frontend-Backend Connectivity
-
-Examples:
-
-- "what exactly does this template validate?"
-- "what does API connected mean?"
-
-Expected response:
-
-- explain that the frontend checks backend health
-- explain in simple language that both services are communicating
-
-### 3. Request Template Evolution
+### 2. Request Template Evolution
 
 Examples:
 
@@ -157,6 +145,8 @@ Shared stack source:
 - `commons/frontend/Dockerfile`
 - `commons/frontend/client.ts`
 - `commons/docker-compose.base.yml`
+
+`GET /api/health` is a backend/runtime contract used by Desktop and service checks. It is not a product screen and the frontend must not preserve an API connection demo when the skeleton becomes a real app.
 
 Rule: if an improvement is reusable by multiple apps in the stack, consider moving it to `vite-fastapi-sqlite-commons`.
 For backend WebSocket URLs, apps must use the commons `apiWebSocketUrl()` helper instead of replacing `URL.pathname` manually, because installed apps receive a prefixed `VITE_API_BASE_URL`.
@@ -250,9 +240,9 @@ Keep the explanation clear and precise.
 
 Answer only with current real visible capabilities:
 
-- verify API status
-- validate frontend-backend connectivity
-- use it as a base to build new functions
+- open the starter shell
+- inspect the removable `/example` placeholder
+- use it as a base to build real app functions
 
 Do not list nonexistent business functions.
 
@@ -261,8 +251,8 @@ Do not list nonexistent business functions.
 Because this is a base template, the correct sequence is:
 
 1. start services
-2. confirm health
-3. define the first functional business flow to implement
+2. define the first functional business flow to implement
+3. replace the scaffold frontend with real app screens
 
 Do not recommend product configurations that do not exist in the skeleton.
 
