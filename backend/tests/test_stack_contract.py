@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 import socket
 import sys
 import threading
 from collections.abc import Iterator
+from pathlib import Path
 from urllib.request import urlopen
 
 import pytest
@@ -14,6 +16,23 @@ from sqlalchemy import inspect
 from sqlmodel import SQLModel
 
 pytestmark = pytest.mark.bdd
+
+TEST_FILE = Path(__file__).resolve()
+
+
+def read_manifest() -> dict[str, object]:
+    env_manifest = os.environ.get("FORGER_APP_MANIFEST_PATH")
+    candidates = []
+    if env_manifest:
+        candidates.append(Path(env_manifest))
+    candidates.extend((
+        TEST_FILE.parents[1] / "manifest.json",
+        TEST_FILE.parents[2] / "manifest.json",
+    ))
+    for candidate in candidates:
+        if candidate.exists():
+            return json.loads(candidate.read_text(encoding="utf-8"))
+    raise AssertionError("manifest.json is not available to the backend contract test")
 
 
 @pytest.fixture(scope="module")
@@ -38,6 +57,27 @@ def skeleton_app(tmp_path_factory: pytest.TempPathFactory) -> Iterator[object]:
 def test_health_endpoint_validates_backend_and_database(skeleton_app: object) -> None:
     with TestClient(skeleton_app) as client:
         response = client.get("/api/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "database": "sqlite"}
+
+
+def test_manifest_backend_healthcheck_matches_real_app_route(skeleton_app: object) -> None:
+    manifest = read_manifest()
+    backend_service = next(
+        service for service in manifest["services"] if service["name"] == "backend"
+    )
+
+    with TestClient(skeleton_app) as client:
+        response = client.get(backend_service["healthcheck"])
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "database": "sqlite"}
+
+
+def test_unprefixed_health_endpoint_remains_available_for_agents(skeleton_app: object) -> None:
+    with TestClient(skeleton_app) as client:
+        response = client.get("/health")
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "database": "sqlite"}

@@ -11,8 +11,10 @@ services:
     environment:
       DATABASE_URL: sqlite:////app/data/app.dev.sqlite
       CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      FORGER_APP_MANIFEST_PATH: /forger-app/manifest.json
     volumes:
       - ./backend:/app
+      - ./manifest.json:/forger-app/manifest.json:ro
       - ./backend/data:/app/data
       - ./commons/backend/database.py:/app/src/app/database.py
       - ./commons/backend/background_jobs.py:/app/src/app/background_jobs.py

@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    app.include_router(health_router)
     app.include_router(health_router, prefix="/api")
     app.include_router(forger_context_router)
     app.include_router(create_realtime_router())
