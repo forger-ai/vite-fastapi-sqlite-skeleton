@@ -118,6 +118,38 @@ def revoke_folder_grant(grant_id: str) -> dict[str, Any] | None:
     )
 
 
+def list_connections() -> dict[str, Any]:
+    return _request("GET", "/connections", None)
+
+
+def get_connection_status(connection_type: str) -> dict[str, Any]:
+    return _request(
+        "GET",
+        f"/connections/{quote(connection_type, safe='')}/status",
+        None,
+    )
+
+
+def connection_status(connection_type: str) -> dict[str, Any]:
+    return get_connection_status(connection_type)
+
+
+def call_connection_action(
+    connection_type: str,
+    action_id: str,
+    input: dict[str, Any] | None = None,
+    connection_id: str | None = None,
+) -> dict[str, Any]:
+    body: dict[str, Any] = {"input": input or {}}
+    if connection_id:
+        body["connectionId"] = connection_id
+    return _request(
+        "POST",
+        f"/connections/{quote(connection_type, safe='')}/actions/{quote(action_id, safe='')}",
+        body,
+    )
+
+
 def start_agent_task(
     *,
     template_id: str,

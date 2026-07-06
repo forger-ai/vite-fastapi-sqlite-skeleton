@@ -185,7 +185,7 @@ def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
 
     calls: list[tuple[str, str, dict | None]] = []
 
-    def fake_request(method: str, path: str, body: dict | None):
+    def fake_request(method: str, path: str, body: dict | None, **_kwargs: object):
         calls.append((method, path, body))
         return {"desktop_thread_id": "thread_1", "desktop_run_id": "run_1", "runId": "task_1"}
 
@@ -219,6 +219,15 @@ def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
     forger_desktop.request_folder_grant(grant_token="grant-token")
     forger_desktop.list_folder_grants()
     forger_desktop.revoke_folder_grant("grant/id")
+    forger_desktop.list_connections()
+    forger_desktop.connection_status("gmail")
+    forger_desktop.get_connection_status("gmail")
+    forger_desktop.call_connection_action(
+        "gmail",
+        "gmail.search_messages",
+        {"query": "from:example@example.com"},
+        connection_id="gmail-default",
+    )
 
     assert calls[0] == (
         "POST",
@@ -240,6 +249,17 @@ def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
     assert calls[4] == ("POST", "/folder-grants/request", {"grantToken": "grant-token"})
     assert calls[5] == ("GET", "/folder-grants", None)
     assert calls[6] == ("DELETE", "/folder-grants/grant%2Fid", None)
+    assert calls[7] == ("GET", "/connections", None)
+    assert calls[8] == ("GET", "/connections/gmail/status", None)
+    assert calls[9] == ("GET", "/connections/gmail/status", None)
+    assert calls[10] == (
+        "POST",
+        "/connections/gmail/actions/gmail.search_messages",
+        {
+            "input": {"query": "from:example@example.com"},
+            "connectionId": "gmail-default",
+        },
+    )
 
 
 def test_forger_desktop_folder_grant_token_matches_contract(
