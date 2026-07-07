@@ -2,6 +2,7 @@
   "name": "vite-fastapi-sqlite-skeleton",
   "version": "0.1.0",
   "description": "Base template for Forger apps using FastAPI, SQLite, Vite, React, Tailwind CSS, shadcn/ui, and Radix primitives.",
+  "license": "GPL-3.0-only",
   "changelog": [
     {
       "version": "0.1.0",
