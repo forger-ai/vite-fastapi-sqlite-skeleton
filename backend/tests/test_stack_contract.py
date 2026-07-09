@@ -222,6 +222,12 @@ def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
     forger_desktop.list_connections()
     forger_desktop.connection_status("gmail")
     forger_desktop.get_connection_status("gmail")
+    forger_desktop.configure_connection("gmail", label="Personal Gmail", connection_id="gmail-default")
+    forger_desktop.request_connection_grant(
+        "gmail",
+        reason="Use Gmail from the app",
+        connection_ids=["gmail-default"],
+    )
     forger_desktop.call_connection_action(
         "gmail",
         "gmail.search_messages",
@@ -253,6 +259,22 @@ def test_forger_desktop_helpers_pass_workspace_and_folder_grants(
     assert calls[8] == ("GET", "/connections/gmail/status", None)
     assert calls[9] == ("GET", "/connections/gmail/status", None)
     assert calls[10] == (
+        "POST",
+        "/connections/gmail/setup",
+        {
+            "label": "Personal Gmail",
+            "connectionId": "gmail-default",
+        },
+    )
+    assert calls[11] == (
+        "POST",
+        "/connections/gmail/grants/request",
+        {
+            "reason": "Use Gmail from the app",
+            "connectionIds": ["gmail-default"],
+        },
+    )
+    assert calls[12] == (
         "POST",
         "/connections/gmail/actions/gmail.search_messages",
         {
